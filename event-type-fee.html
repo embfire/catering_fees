@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event type fee</title>
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="fees-store.js" defer></script>
+    <script src="event-type-script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="close-button" aria-label="Close">
+                    <i class="ph ph-x icon-24" aria-hidden="true"></i>
+                </button>
+                <h1 class="header-title">Event type fee</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-activate" id="event-type-save">Save</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <section class="page-header">
+                <h2 class="page-title">Event type fee</h2>
+                <p class="page-description">Charge different fees by event type</p>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Form Fields -->
+            <section class="form-section">
+                <div class="form-row">
+                    <div class="form-label">
+                        <label for="event-type-name">Event type</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="input-wrapper">
+                            <div class="input-field select-field" id="event-type-select" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="select-text is-placeholder" id="event-type-display">Select</span>
+                                <div class="select-actions">
+                                    <button class="select-clear" type="button" id="event-type-clear" aria-label="Clear selection">
+                                        <i class="ph ph-x icon-16" aria-hidden="true"></i>
+                                    </button>
+                                    <span class="select-caret" aria-hidden="true">
+                                        <i class="ph ph-caret-down icon-16"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="select-menu" id="event-type-menu" role="listbox" aria-hidden="true"></div>
+                            <input type="hidden" id="event-type-name" required>
+                            <p class="form-error" id="event-type-name-error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-label">
+                        <label>Calculation type</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="segmented-control" id="event-type-calc">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-label">
+                        <label for="event-type-amount">Fee amount</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" id="event-type-prefix">$</span>
+                                <input type="text" id="event-type-amount" class="text-input" value="">
+                                <span class="input-suffix is-hidden" id="event-type-suffix">%</span>
+                            </div>
+                            <p class="form-error" id="event-type-amount-error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

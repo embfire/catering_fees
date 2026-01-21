@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-service fee</title>
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="fees-store.js" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="close-button" aria-label="Close">
+                    <i class="ph ph-x icon-24" aria-hidden="true"></i>
+                </button>
+                <h1 class="header-title">Full-service fee</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-activate" id="full-service-toggle">Activate</button>
+            </div>
+        </header>
+        <div class="unsaved-bar" id="full-service-unsaved">
+            <span class="unsaved-title">Unsaved changes</span>
+            <div class="unsaved-actions">
+                <button class="btn-secondary" id="full-service-cancel" type="button">Cancel</button>
+                <button class="btn-activate" id="full-service-save" type="button">Save</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <section class="page-header">
+                <h2 class="page-title">Full-service fee</h2>
+                <p class="page-description">Charge when customers select setup & cleanup service</p>
+                <div class="divider"></div>
+            </section>
+
+            <!-- Form Fields -->
+            <section class="form-section">
+                <!-- Calculation Type -->
+                <div class="form-row">
+                    <div class="form-label">
+                        <label>Calculation type</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="segmented-control">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fee Amount -->
+                <div class="form-row">
+                    <div class="form-label">
+                        <label for="fee-amount">Fee amount</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" id="fee-prefix">$</span>
+                                <input type="text" id="fee-amount" class="text-input" value="">
+                                <span class="input-suffix is-hidden" id="fee-suffix">%</span>
+                            </div>
+                            <p class="form-error" id="full-service-error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Deactivation Confirmation Dialog -->
+    <div class="modal-backdrop" id="full-service-deactivate-dialog" aria-hidden="true">
+        <div class="dialog">
+            <div class="dialog-content">
+                <p class="dialog-title">Deactivate full-service fee?</p>
+                <p class="dialog-body">This will stop charging the full-service fee. Your settings will be saved.</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-secondary" type="button" id="full-service-deactivate-cancel">Cancel</button>
+                <button class="btn-destructive" type="button" id="full-service-deactivate-confirm">Deactivate</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

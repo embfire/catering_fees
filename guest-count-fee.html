@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest count fee</title>
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="fees-store.js" defer></script>
+    <script src="guest-count-script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="close-button" aria-label="Close">
+                    <i class="ph ph-x icon-24" aria-hidden="true"></i>
+                </button>
+                <h1 class="header-title">Guest count fee</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn-activate" id="guest-count-toggle">Activate</button>
+            </div>
+        </header>
+        <div class="unsaved-bar" id="guest-count-unsaved">
+            <span class="unsaved-title">Unsaved changes</span>
+            <div class="unsaved-actions">
+                <button class="btn-secondary" id="guest-count-cancel" type="button">Cancel</button>
+                <button class="btn-activate" id="guest-count-save" type="button">Save</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <section class="page-header">
+                <h2 class="page-title">Guest count fee</h2>
+                <p class="page-description">Scale fees based on the number of guests</p>
+                <div class="divider"></div>
+            </section>
+
+            <section class="form-section">
+                <div class="form-row">
+                    <div class="form-label">
+                        <label>Calculation type</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="segmented-control" id="guest-count-calc-type">
+                            <button class="segment-button" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ranges Table -->
+            <section class="table-section">
+                <div class="table-header">
+                    <h3 class="table-title">Guest count ranges</h3>
+                    <button class="btn-activate btn-with-icon" id="add-range">
+                        <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                        Add range
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="fee-table">
+                        <thead>
+                            <tr>
+                                <th>RANGE</th>
+                                <th>FEE AMOUNT</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="guest-range-body"></tbody>
+                    </table>
+                </div>
+                <p class="table-hint" id="guest-range-info" role="status"></p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Activation Warning Dialog -->
+    <div class="modal-backdrop" id="guest-activation-dialog" aria-hidden="true">
+        <div class="dialog">
+            <div class="dialog-content">
+                <p class="dialog-title">Add guest ranges first</p>
+                <p class="dialog-body">Add at least one guest range before activating this fee.</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-activate" type="button" id="guest-activation-ok">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Open-ended Range Dialog -->
+    <div class="modal-backdrop" id="guest-open-ended-dialog" aria-hidden="true">
+        <div class="dialog">
+            <div class="dialog-content">
+                <p class="dialog-title">Open-ended range already exists</p>
+                <p class="dialog-body">You already have an open-ended range. Edit it instead of adding a new one.</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-activate" type="button" id="guest-open-ended-ok">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deactivation Confirmation Dialog -->
+    <div class="modal-backdrop" id="guest-deactivate-dialog" aria-hidden="true">
+        <div class="dialog">
+            <div class="dialog-content">
+                <p class="dialog-title">Deactivate guest count fee?</p>
+                <p class="dialog-body">This will stop applying guest count fees to new orders. Your ranges will be saved.</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-secondary" type="button" id="guest-deactivate-cancel">Cancel</button>
+                <button class="btn-destructive" type="button" id="guest-deactivate-confirm">Deactivate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest Range Modal -->
+    <div class="modal-backdrop" id="guest-range-modal" aria-hidden="true">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h3 class="modal-title" id="guest-range-title">Add guest range</h3>
+                <button class="modal-close" type="button" aria-label="Close">
+                    <i class="ph ph-x icon-24" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal-body modal-body-compact" id="guest-range-form">
+                <div class="modal-row modal-row-columns">
+                    <div class="modal-field">
+                        <label class="modal-label" for="min-guests">From</label>
+                        <input class="modal-input" id="min-guests" type="number" min="0" step="1" inputmode="numeric" placeholder="">
+                        <p class="modal-error" id="min-guests-error" role="alert"></p>
+                    </div>
+                    <div class="modal-field">
+                        <label class="modal-label" for="max-guests">To</label>
+                        <input class="modal-input" id="max-guests" type="number" min="0" step="1" inputmode="numeric" placeholder="">
+                        <p class="modal-error" id="max-guests-error" role="alert"></p>
+                    </div>
+                </div>
+                <div class="modal-field-stack">
+                    <div class="modal-row">
+                        <label class="modal-label" for="guest-amount">Fee amount</label>
+                        <div class="input-field">
+                            <span class="input-prefix" id="guest-amount-prefix">$</span>
+                            <input class="text-input" id="guest-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="">
+                            <span class="input-suffix is-hidden" id="guest-amount-suffix">%</span>
+                        </div>
+                    </div>
+                    <p class="modal-error" id="guest-amount-error" role="alert"></p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" type="button" id="guest-range-cancel">Cancel</button>
+                    <button class="btn-activate" type="submit">Add range</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

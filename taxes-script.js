@@ -103,6 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const tableBody = document.getElementById('event-type-table-body');
+    const emptyState = document.getElementById('event-type-empty');
+    const tableContainer = tableBody ? tableBody.closest('.table-container') : null;
     const addFeeButton = document.querySelector('.section-header .btn-primary');
 
     const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`;
@@ -139,16 +141,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const renderTable = () => {
         const rules = FeesStore.getEventTypeRules();
         tableBody.innerHTML = '';
+        const isEmpty = rules.length === 0;
 
-        if (!rules.length) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `
-                <td class="cell-bold" colspan="4">No event type fees added yet.</td>
-            `;
-            tableBody.appendChild(emptyRow);
-            return;
+        if (emptyState) {
+            emptyState.hidden = !isEmpty;
+        }
+        if (tableContainer) {
+            tableContainer.classList.toggle('is-empty', isEmpty);
         }
 
+        if (isEmpty) {
+            return;
+        }
         rules.forEach(rule => {
             const row = document.createElement('tr');
             row.dataset.id = rule.id;

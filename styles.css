@@ -577,6 +577,7 @@ input[type="number"] {
 .table-container {
     width: 100%;
     overflow-x: auto;
+    position: relative;
 }
 
 .guest-count-advanced .page-header {
@@ -696,6 +697,28 @@ input[type="number"] {
 .empty-cell {
     text-align: center;
     color: var(--grayscale-60);
+}
+
+.table-empty {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 32px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-60);
+    pointer-events: none;
+}
+
+.table-container.is-empty {
+    min-height: 140px;
 }
 
 .cell-action {

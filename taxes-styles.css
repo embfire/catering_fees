@@ -14,6 +14,7 @@
     --grayscale-05: #f2f2f2;
     --grayscale-white: #ffffff;
     --grayscale-transparent-3: rgba(20, 20, 20, 0.03);
+    --grayscale-transparent-5: rgba(20, 20, 20, 0.05);
     --grayscale-transparent-7: rgba(0, 0, 0, 0.07);
     --grayscale-transparent-10: rgba(0, 0, 0, 0.1);
     
@@ -456,7 +457,7 @@ body {
 }
 
 .btn-text:hover {
-    background-color: var(--primary-07);
+    background-color: var(--grayscale-transparent-5);
 }
 
 .btn-primary {
@@ -545,6 +546,33 @@ body {
 .table-container {
     width: 100%;
     overflow-x: auto;
+    position: relative;
+}
+
+.table-container.is-empty {
+    min-height: 140px;
+}
+
+.table-empty {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 32px;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-60);
+    pointer-events: none;
+}
+
+.table-empty[hidden] {
+    display: none;
 }
 
 .fees-table {

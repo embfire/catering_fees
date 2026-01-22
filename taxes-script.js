@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (action === 'guest-count') {
                 window.location.href = 'guest-count-fee-advanced.html';
             }
+            if (action === 'order-amount') {
+                window.location.href = 'order-amount-fee-advanced.html';
+            }
         });
     });
 
@@ -132,10 +135,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const settings = FeesStore.getSettings();
         const hasGuestActive = !!settings.guestCountActive;
         const fullServiceRule = FeesStore.getFullServiceRule();
+        const hasOrderAmountActive = !!settings.orderAmountActive;
         setStatusTag('guest-count-status', hasGuestActive);
         setStatusTag('full-service-status', !!fullServiceRule.active);
+        setStatusTag('order-amount-status', hasOrderAmountActive);
         setActionLabel('guest-count-action', hasGuestActive);
         setActionLabel('full-service-action', !!fullServiceRule.active);
+        setActionLabel('order-amount-action', hasOrderAmountActive);
     };
 
     const renderTable = () => {

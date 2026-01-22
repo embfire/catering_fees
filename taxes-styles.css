@@ -250,11 +250,14 @@ body {
 
 /* Page Title */
 .page-title {
+    color: var(--grayscale-100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-family: var(--Font-Family-All-Text, "SF Pro Text");
     font-size: 22px;
+    font-style: normal;
     font-weight: 700;
     line-height: 28px;
     letter-spacing: -0.5px;
-    color: var(--grayscale-100);
     margin-bottom: 24px;
 }
 
@@ -305,11 +308,14 @@ body {
 }
 
 .section-title {
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 28px;
-    letter-spacing: -0.5px;
     color: var(--grayscale-100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-family: var(--Font-Family-All-Text, "SF Pro Text");
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 22px;
+    letter-spacing: -0.408px;
     margin-bottom: 24px;
 }
 
@@ -318,6 +324,10 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
+}
+
+.section-header .section-title {
+    margin-bottom: 0;
 }
 
 /* Cards Grid */
@@ -340,6 +350,7 @@ body {
     display: flex;
     gap: 16px;
     padding: 16px;
+    min-height: 100px;
 }
 
 .card-icon {
@@ -610,6 +621,7 @@ body {
 .fees-table tbody td.cell-action {
     text-align: center;
     width: 60px;
+    vertical-align: middle;
 }
 
 .action-buttons {

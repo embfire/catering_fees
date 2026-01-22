@@ -51,6 +51,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return numeric;
     };
+    const formatDollarInput = (input) => {
+        if (!input) return;
+        const rawValue = String(input.value || '').trim();
+        if (!rawValue) return;
+        const numeric = parseFloat(rawValue);
+        if (!Number.isFinite(numeric)) return;
+        input.value = numeric.toFixed(2);
+    };
+    const formatPercentInput = (input) => {
+        if (!input) return;
+        const rawValue = String(input.value || '').trim();
+        if (!rawValue) return;
+        const numeric = parseFloat(rawValue);
+        if (!Number.isFinite(numeric)) return;
+        input.value = String(numeric);
+    };
 
     const clone = (value) => JSON.parse(JSON.stringify(value));
     let savedRules = clone(FeesStore.getGuestCountRules());
@@ -348,6 +364,11 @@ document.addEventListener('DOMContentLoaded', function() {
             convertRulesForCalcType(prevType, nextType);
             updateCalcHint(prevType, nextType);
             updatePrefix();
+            if (nextType === 'percent') {
+                formatPercentInput(amountInput);
+            } else {
+                formatDollarInput(amountInput);
+            }
             renderTable();
             setDirty(computeDirty());
         });
@@ -445,6 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
             field.classList.remove('input-error');
             if (amountField && field === amountInput) {
                 amountField.classList.remove('input-error');
+            }
+        });
+        field.addEventListener('blur', () => {
+            if (field === amountInput) {
+                const calcType = draftSettings.guestCountCalcType || getSelectedCalcType();
+                if (calcType !== 'percent') {
+                    formatDollarInput(field);
+                }
             }
         });
     });

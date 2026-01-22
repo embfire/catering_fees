@@ -6,23 +6,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const closeButton = document.querySelector('.close-button');
     const addRangeButton = document.getElementById('add-range');
-    const toggleButton = document.getElementById('guest-count-toggle');
-    const unsavedBar = document.getElementById('guest-count-unsaved');
-    const unsavedCancel = document.getElementById('guest-count-cancel');
-    const unsavedSave = document.getElementById('guest-count-save');
-    const calcButtons = Array.from(document.querySelectorAll('#guest-count-calc-type .segment-button'));
-    const amountHeader = document.getElementById('guest-amount-header');
-    const tableBody = document.getElementById('guest-range-body');
-    const activationDialog = document.getElementById('guest-activation-dialog');
-    const activationOk = document.getElementById('guest-activation-ok');
-    const activationBody = document.getElementById('guest-activation-body');
-    const openEndedDialog = document.getElementById('guest-open-ended-dialog');
-    const openEndedOk = document.getElementById('guest-open-ended-ok');
-    const deactivateDialog = document.getElementById('guest-deactivate-dialog');
-    const deactivateCancel = document.getElementById('guest-deactivate-cancel');
-    const deactivateConfirm = document.getElementById('guest-deactivate-confirm');
+    const toggleButton = document.getElementById('order-amount-toggle');
+    const unsavedBar = document.getElementById('order-amount-unsaved');
+    const unsavedCancel = document.getElementById('order-amount-cancel');
+    const unsavedSave = document.getElementById('order-amount-save');
+    const calcButtons = Array.from(document.querySelectorAll('#order-amount-calc-type .segment-button'));
+    const amountHeader = document.getElementById('order-amount-header');
+    const tableBody = document.getElementById('order-amount-body');
+    const activationDialog = document.getElementById('order-amount-activation-dialog');
+    const activationOk = document.getElementById('order-amount-activation-ok');
+    const activationBody = document.getElementById('order-amount-activation-body');
+    const openEndedDialog = document.getElementById('order-amount-open-ended-dialog');
+    const openEndedOk = document.getElementById('order-amount-open-ended-ok');
+    const deactivateDialog = document.getElementById('order-amount-deactivate-dialog');
+    const deactivateCancel = document.getElementById('order-amount-deactivate-cancel');
+    const deactivateConfirm = document.getElementById('order-amount-deactivate-confirm');
 
-    const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`;
     const parseCurrencyToCents = (value) => {
         const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ''));
         if (!Number.isFinite(numeric)) {
@@ -53,26 +52,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!Number.isFinite(numeric)) return;
         input.value = String(numeric);
     };
+    const formatDollars = (cents) => (cents / 100).toFixed(2);
     const clone = (value) => JSON.parse(JSON.stringify(value));
     const normalizeRules = (rules) => clone(rules).map(rule => ({
         id: rule.id,
-        minGuests: rule.minGuests,
-        maxGuests: rule.maxGuests,
+        minSubtotalCents: rule.minSubtotalCents,
+        maxSubtotalCents: rule.maxSubtotalCents,
         calcType: rule.calcType,
         amountCents: rule.amountCents,
         percent: rule.percent,
         active: rule.active
     })).sort((a, b) => String(a.id).localeCompare(String(b.id)));
 
-    let savedRules = clone(FeesStore.getGuestCountRules());
+    let savedRules = clone(FeesStore.getOrderAmountRules());
     let savedSettings = { ...FeesStore.getSettings() };
-    let draftRules = savedSettings.guestCountActive ? clone(savedRules) : [];
+    let draftRules = savedSettings.orderAmountActive ? clone(savedRules) : [];
     let draftSettings = { ...savedSettings };
     let isDirty = false;
 
     const setDirty = (dirty) => {
         isDirty = dirty;
-        if (!savedSettings.guestCountActive) {
+        if (!savedSettings.orderAmountActive) {
             if (unsavedBar) {
                 unsavedBar.classList.remove('is-visible');
             }
@@ -86,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const computeDirty = () => {
-        if (!savedSettings.guestCountActive) {
+        if (!savedSettings.orderAmountActive) {
             return false;
         }
-        if (draftSettings.guestCountCalcType !== savedSettings.guestCountCalcType) {
+        if (draftSettings.orderAmountCalcType !== savedSettings.orderAmountCalcType) {
             return true;
         }
         const currentRules = getRulesFromTable();
@@ -115,13 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const updateCalcCopy = () => {
-        const calcType = draftSettings.guestCountCalcType || getSelectedCalcType();
+        const calcType = draftSettings.orderAmountCalcType || getSelectedCalcType();
         if (amountHeader) {
-            amountHeader.textContent = calcType === 'percent'
-                ? 'FEE %'
-                : calcType === 'perPerson'
-                    ? 'FEE / PERSON'
-                    : 'FLAT FEE';
+            amountHeader.textContent = calcType === 'percent' ? 'FEE %' : 'FLAT FEE';
         }
     };
 
@@ -184,24 +180,28 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = document.createElement('tr');
         row.className = 'range-row';
         row.dataset.id = rule.id || '';
+        const minValue = Number.isFinite(rule.minSubtotalCents) ? formatDollars(rule.minSubtotalCents) : '';
+        const maxValue = Number.isFinite(rule.maxSubtotalCents) ? formatDollars(rule.maxSubtotalCents) : '';
         row.innerHTML = `
             <td>
                 <div class="input-field input-field-compact">
-                    <input type="number" class="text-input range-input" data-field="min" min="0" step="1" value="${rule.minGuests ?? ''}">
+                    <span class="input-prefix range-prefix">$</span>
+                    <input type="number" class="text-input range-input" data-field="min" min="0" step="0.01" value="${minValue}">
                 </div>
                 <p class="form-error range-error" data-error="min"></p>
             </td>
             <td>
                 <div class="input-field input-field-compact">
-                    <input type="number" class="text-input range-input" data-field="max" min="0" step="1" value="${rule.maxGuests ?? ''}" placeholder="∞">
+                    <span class="input-prefix range-prefix">$</span>
+                    <input type="number" class="text-input range-input" data-field="max" min="0" step="0.01" value="${maxValue}" placeholder="∞">
                 </div>
                 <p class="form-error range-error" data-error="max"></p>
             </td>
             <td>
                 <div class="input-field input-field-compact">
-                    <span class="input-prefix ${getSelectedCalcType() === 'percent' ? 'is-hidden' : ''}">$</span>
+                    <span class="input-prefix amount-prefix ${getSelectedCalcType() === 'percent' ? 'is-hidden' : ''}">$</span>
                     <input type="number" class="text-input range-input" data-field="amount" min="0" step="0.01" value="">
-                    <span class="input-suffix ${getSelectedCalcType() === 'percent' ? '' : 'is-hidden'}">%</span>
+                    <span class="input-suffix amount-suffix ${getSelectedCalcType() === 'percent' ? '' : 'is-hidden'}">%</span>
                 </div>
                 <p class="form-error range-error" data-error="amount"></p>
             </td>
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         const amountInput = row.querySelector('[data-field="amount"]');
         if (amountInput) {
-            if (draftSettings.guestCountCalcType === 'percent') {
+            if (draftSettings.orderAmountCalcType === 'percent') {
                 amountInput.value = Number.isFinite(rule.percent) ? rule.percent : '';
                 amountInput.step = '0.1';
             } else {
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const renderTable = () => {
         tableBody.innerHTML = '';
-        const ranges = clone(draftRules).sort((a, b) => Number(a.minGuests) - Number(b.minGuests));
+        const ranges = clone(draftRules).sort((a, b) => Number(a.minSubtotalCents) - Number(b.minSubtotalCents));
         if (!ranges.length) {
             return;
         }
@@ -238,15 +238,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const getRulesFromTable = () => {
-        const calcType = draftSettings.guestCountCalcType || getSelectedCalcType();
+        const calcType = draftSettings.orderAmountCalcType || getSelectedCalcType();
         return Array.from(tableBody.querySelectorAll('.range-row')).map(row => {
             const minValue = row.querySelector('[data-field="min"]').value;
             const maxValue = row.querySelector('[data-field="max"]').value;
             const amountValue = row.querySelector('[data-field="amount"]').value;
             return {
                 id: row.dataset.id || undefined,
-                minGuests: minValue,
-                maxGuests: maxValue === '' ? null : maxValue,
+                minSubtotalCents: parseCurrencyToCents(minValue),
+                maxSubtotalCents: maxValue === '' ? null : parseCurrencyToCents(maxValue),
                 calcType,
                 amountCents: calcType === 'percent' ? 0 : parseCurrencyToCents(amountValue),
                 percent: calcType === 'percent' ? parsePercent(amountValue) : 0,
@@ -262,8 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let valid = true;
         const parsed = rules.map(rule => ({
-            min: Number(rule.minGuests),
-            max: rule.maxGuests === null ? null : Number(rule.maxGuests),
+            min: rule.minSubtotalCents,
+            max: rule.maxSubtotalCents === null ? null : rule.maxSubtotalCents,
             amountCents: rule.amountCents,
             percent: rule.percent
         }));
@@ -271,33 +271,23 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach((row, index) => {
             const rule = rules[index];
             const data = parsed[index];
-            if (rule.minGuests === '') {
+            if (row.querySelector('[data-field="min"]').value === '') {
                 setRowError(row, '[data-error="min"]', 'From cannot be empty.');
                 row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
                 valid = false;
                 return;
             }
             if (!Number.isFinite(data.min) || data.min < 0) {
-                setRowError(row, '[data-error="min"]', 'Minimum guests must be 0 or greater.');
-                row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-                valid = false;
-            }
-            if (Number.isFinite(data.min) && !Number.isInteger(data.min)) {
-                setRowError(row, '[data-error="min"]', 'Minimum guests must be a whole number.');
+                setRowError(row, '[data-error="min"]', 'Minimum subtotal must be 0 or greater.');
                 row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
             if (data.max !== null && (!Number.isFinite(data.max) || data.max < data.min)) {
-                setRowError(row, '[data-error="max"]', 'Maximum guests must be greater than or equal to minimum.');
+                setRowError(row, '[data-error="max"]', 'Maximum subtotal must be greater than or equal to minimum.');
                 row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
-            if (data.max !== null && Number.isFinite(data.max) && !Number.isInteger(data.max)) {
-                setRowError(row, '[data-error="max"]', 'Maximum guests must be a whole number.');
-                row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
-                valid = false;
-            }
-            if (draftSettings.guestCountCalcType === 'percent') {
+            if (draftSettings.orderAmountCalcType === 'percent') {
                 if (!Number.isFinite(data.percent) || data.percent < 0 || data.percent > 100) {
                     setRowError(row, '[data-error="amount"]', 'Percent must be between 0 and 100.');
                     row.querySelector('[data-field="amount"]').closest('.input-field').classList.add('input-error');
@@ -318,9 +308,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .map((rule, index) => ({ ...rule, index }))
             .sort((a, b) => a.min - b.min);
         const first = ordered[0];
-        if (first && first.min !== 0 && first.min !== 1) {
+        if (first && first.min !== 0) {
             const row = rows[first.index];
-            setRowError(row, '[data-error="min"]', 'First range must start at 0 or 1.');
+            setRowError(row, '[data-error="min"]', 'First range must start at 0.');
             row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
             return { valid: false };
         }
@@ -338,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const next = ordered[i + 1];
             if (next && next.min !== current.max + 1) {
-                setRowError(row, '[data-error="max"]', 'Guest count ranges must be continuous with no gaps.');
+                setRowError(row, '[data-error="max"]', 'Subtotal ranges must be continuous with no gaps.');
                 row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
                 return { valid: false };
             }
@@ -354,28 +344,28 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const saveDraftToStore = (active) => {
-        const rules = getRulesFromTable().filter(rule => rule.minGuests !== '');
+        const rules = getRulesFromTable().filter(rule => Number.isFinite(rule.minSubtotalCents));
         const store = FeesStore.loadStore();
-        store.guestCountRules = clone(rules);
+        store.orderAmountRules = clone(rules);
         store.settings = {
             ...store.settings,
-            guestCountActive: active,
-            guestCountCalcType: draftSettings.guestCountCalcType
+            orderAmountActive: active,
+            orderAmountCalcType: draftSettings.orderAmountCalcType
         };
         FeesStore.saveStore(store);
-        savedRules = clone(store.guestCountRules);
+        savedRules = clone(store.orderAmountRules);
         savedSettings = { ...store.settings };
         draftRules = clone(savedRules);
         draftSettings = { ...savedSettings };
-        updateToggleLabel(savedSettings.guestCountActive);
+        updateToggleLabel(savedSettings.orderAmountActive);
         renderTable();
     };
 
     const updateAmountAffixes = () => {
-        const calcType = draftSettings.guestCountCalcType || getSelectedCalcType();
+        const calcType = draftSettings.orderAmountCalcType || getSelectedCalcType();
         tableBody.querySelectorAll('.range-row').forEach(row => {
-            const prefix = row.querySelector('.input-prefix');
-            const suffix = row.querySelector('.input-suffix');
+            const prefix = row.querySelector('.amount-prefix');
+            const suffix = row.querySelector('.amount-suffix');
             const amountInput = row.querySelector('[data-field="amount"]');
             if (prefix) {
                 prefix.classList.toggle('is-hidden', calcType === 'percent');
@@ -396,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addRangeButton.addEventListener('click', () => {
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         if (!rows.length) {
-            const firstRow = buildRow({ minGuests: '1', maxGuests: null });
+            const firstRow = buildRow({ minSubtotalCents: 0, maxSubtotalCents: null });
             tableBody.appendChild(firstRow);
             updateAmountAffixes();
             setDirty(true);
@@ -418,18 +408,20 @@ document.addEventListener('DOMContentLoaded', function() {
             lastAmountInput.closest('.input-field').classList.add('input-error');
             return;
         }
-        let newFrom = 1;
-        if (lastMaxInput.value) {
-            newFrom = Number(lastMaxInput.value) + 1;
+        const lastMinCents = parseCurrencyToCents(lastMinInput.value);
+        const lastMaxCents = lastMaxInput.value ? parseCurrencyToCents(lastMaxInput.value) : null;
+        let newFromCents = 0;
+        if (Number.isFinite(lastMaxCents)) {
+            newFromCents = lastMaxCents + 1;
         } else {
-            newFrom = Number(lastMinInput.value || 1) + 50;
-            lastMaxInput.value = String(newFrom - 1);
+            newFromCents = Number.isFinite(lastMinCents) ? lastMinCents + 10000 : 10000;
+            lastMaxInput.value = formatDollars(newFromCents - 1);
         }
         const newRule = {
-            minGuests: String(newFrom),
-            maxGuests: null,
-            amountCents: draftSettings.guestCountCalcType === 'percent' ? 0 : 0,
-            percent: draftSettings.guestCountCalcType === 'percent' ? 0 : 0
+            minSubtotalCents: newFromCents,
+            maxSubtotalCents: null,
+            amountCents: draftSettings.orderAmountCalcType === 'percent' ? 0 : 0,
+            percent: draftSettings.orderAmountCalcType === 'percent' ? 0 : 0
         };
         tableBody.appendChild(buildRow(newRule));
         updateAmountAffixes();
@@ -444,11 +436,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     tableBody.addEventListener('focusout', (event) => {
-        const input = event.target.closest('[data-field="amount"]');
+        const input = event.target.closest('.range-input');
         if (!input) return;
-        const calcType = draftSettings.guestCountCalcType || getSelectedCalcType();
-        if (calcType !== 'percent') {
+        const field = input.dataset.field;
+        if (field === 'min' || field === 'max') {
             formatDollarInput(input);
+            return;
+        }
+        if (field === 'amount') {
+            const calcType = draftSettings.orderAmountCalcType || getSelectedCalcType();
+            if (calcType !== 'percent') {
+                formatDollarInput(input);
+            }
         }
     });
 
@@ -462,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
     calcButtons.forEach(button => {
         button.addEventListener('click', () => {
             setSelectedButton(calcButtons, button.dataset.value);
-            draftSettings.guestCountCalcType = button.dataset.value;
+            draftSettings.orderAmountCalcType = button.dataset.value;
             updateCalcCopy();
             updateAmountAffixes();
             if (button.dataset.value === 'percent') {
@@ -476,9 +475,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (toggleButton) {
         toggleButton.addEventListener('click', () => {
-            if (!savedSettings.guestCountActive) {
+            if (!savedSettings.orderAmountActive) {
                 if (!tableBody.querySelectorAll('.range-row').length) {
-                    openActivationDialog('Add at least one guest range before activating this fee.');
+                    openActivationDialog('Add at least one subtotal range before activating this fee.');
                     return;
                 }
                 if (!validateRules().valid) {
@@ -496,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (unsavedSave) {
         unsavedSave.addEventListener('click', () => {
             if (!tableBody.querySelectorAll('.range-row').length) {
-                openActivationDialog('Add at least one guest range before saving.');
+                openActivationDialog('Add at least one subtotal range before saving.');
                 return;
             }
             if (!validateRules().valid) {
@@ -511,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         unsavedCancel.addEventListener('click', () => {
             draftRules = clone(savedRules);
             draftSettings = { ...savedSettings };
-            setSelectedButton(calcButtons, draftSettings.guestCountCalcType || 'flat');
+            setSelectedButton(calcButtons, draftSettings.orderAmountCalcType || 'flat');
             updateCalcCopy();
             renderTable();
             updateAmountAffixes();
@@ -531,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (deactivateConfirm) {
         deactivateConfirm.addEventListener('click', () => {
             draftRules = clone(savedRules);
-            draftSettings = { ...savedSettings, guestCountActive: false };
+            draftSettings = { ...savedSettings, orderAmountActive: false };
             saveDraftToStore(false);
             setDirty(false);
             closeDeactivateDialog();
@@ -539,10 +538,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    draftSettings.guestCountCalcType = savedSettings.guestCountCalcType || 'flat';
-    setSelectedButton(calcButtons, draftSettings.guestCountCalcType);
+    draftSettings.orderAmountCalcType = savedSettings.orderAmountCalcType || 'flat';
+    setSelectedButton(calcButtons, draftSettings.orderAmountCalcType);
     updateCalcCopy();
-    updateToggleLabel(!!savedSettings.guestCountActive);
+    updateToggleLabel(!!savedSettings.orderAmountActive);
     renderTable();
     updateAmountAffixes();
 });

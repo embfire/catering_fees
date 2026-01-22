@@ -37,6 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return numeric;
     };
+    const formatDollarInput = (input) => {
+        if (!input) return;
+        const rawValue = String(input.value || '').trim();
+        if (!rawValue) return;
+        const numeric = parseFloat(rawValue);
+        if (!Number.isFinite(numeric)) return;
+        input.value = numeric.toFixed(2);
+    };
+    const formatPercentInput = (input) => {
+        if (!input) return;
+        const rawValue = String(input.value || '').trim();
+        if (!rawValue) return;
+        const numeric = parseFloat(rawValue);
+        if (!Number.isFinite(numeric)) return;
+        input.value = String(numeric);
+    };
 
     const setSelectedCalcType = (value) => {
         calcButtons.forEach(btn => {
@@ -214,6 +230,12 @@ document.addEventListener('DOMContentLoaded', function() {
             amountError.textContent = '';
         }
     });
+    amountInput.addEventListener('blur', () => {
+        const calcType = getSelectedCalcType();
+        if (calcType !== 'percent') {
+            formatDollarInput(amountInput);
+        }
+    });
 
     document.addEventListener('click', () => {
         closeMenu();
@@ -222,6 +244,11 @@ document.addEventListener('DOMContentLoaded', function() {
     calcButtons.forEach(button => {
         button.addEventListener('click', () => {
             setSelectedCalcType(button.dataset.value);
+            if (button.dataset.value === 'percent') {
+                formatPercentInput(amountInput);
+            } else {
+                formatDollarInput(amountInput);
+            }
         });
     });
 

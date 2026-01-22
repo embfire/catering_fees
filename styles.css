@@ -191,11 +191,14 @@ body.has-unsaved-bar .header {
 }
 
 .page-title {
+    color: var(--grayscale-100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-family: var(--Font-Family-All-Text, "SF Pro Text");
     font-size: 22px;
+    font-style: normal;
     font-weight: 700;
     line-height: 28px;
     letter-spacing: -0.5px;
-    color: var(--grayscale-100);
     margin-bottom: 4px;
 }
 
@@ -568,10 +571,14 @@ input[type="number"] {
 }
 
 .table-title {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 24px;
     color: var(--grayscale-100);
+    font-feature-settings: 'liga' off, 'clig' off;
+    font-family: var(--Font-Family-All-Text, "SF Pro Text");
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 22px;
+    letter-spacing: -0.408px;
 }
 
 .table-container {
@@ -618,6 +625,10 @@ input[type="number"] {
 
 .fee-table-editable td {
     vertical-align: top;
+}
+
+.fee-table-editable td.cell-action {
+    vertical-align: middle;
 }
 
 .input-field-compact {
@@ -724,6 +735,7 @@ input[type="number"] {
 .cell-action {
     width: 80px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .action-buttons {

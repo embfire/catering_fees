@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest count fee</title>
+    <title>Order amount fee</title>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
     <script src="fees-store.js" defer></script>
-    <script src="guest-count-advanced-script.js" defer></script>
+    <script src="order-amount-advanced-script.js" defer></script>
 </head>
-<body class="guest-count-advanced">
+<body class="guest-count-advanced order-amount-advanced">
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -17,17 +17,17 @@
                 <button class="close-button" aria-label="Close">
                     <i class="ph ph-x icon-24" aria-hidden="true"></i>
                 </button>
-                <h1 class="header-title">Guest count fee</h1>
+                <h1 class="header-title">Order amount fee</h1>
             </div>
             <div class="header-right">
-                <button class="btn-activate" id="guest-count-toggle">Activate</button>
+                <button class="btn-activate" id="order-amount-toggle">Activate</button>
             </div>
         </header>
-        <div class="unsaved-bar" id="guest-count-unsaved">
+        <div class="unsaved-bar" id="order-amount-unsaved">
             <span class="unsaved-title">Unsaved changes</span>
             <div class="unsaved-actions">
-                <button class="btn-secondary" id="guest-count-cancel" type="button">Cancel</button>
-                <button class="btn-activate" id="guest-count-save" type="button">Save</button>
+                <button class="btn-secondary" id="order-amount-cancel" type="button">Cancel</button>
+                <button class="btn-activate" id="order-amount-save" type="button">Save</button>
             </div>
         </div>
 
@@ -35,8 +35,8 @@
         <main class="main-content">
             <!-- Page Header -->
             <section class="page-header">
-                <h1 class="page-title">Guest count fee</h1>
-                <p class="page-description">Scale fees based on the number of guests</p>
+                <h1 class="page-title">Order amount fee</h1>
+                <p class="page-description">Scale fees based on the order subtotal</p>
                 <div class="divider"></div>
             </section>
 
@@ -46,9 +46,8 @@
                         <label>Calculation type</label>
                     </div>
                     <div class="form-input">
-                        <div class="segmented-control" id="guest-count-calc-type">
+                        <div class="segmented-control" id="order-amount-calc-type">
                             <button class="segment-button" data-value="flat">Flat</button>
-                            <button class="segment-button" data-value="perPerson">Per person</button>
                             <button class="segment-button" data-value="percent">Percentage</button>
                         </div>
                     </div>
@@ -57,7 +56,7 @@
 
             <section class="table-section">
                 <div class="table-header">
-                    <h2 class="table-title">Guest count ranges</h2>
+                    <h2 class="table-title">Subtotal ranges</h2>
                     <button class="btn-secondary btn-with-icon" id="add-range">
                         <i class="ph ph-plus icon-16" aria-hidden="true"></i>
                         Add range
@@ -69,11 +68,11 @@
                             <tr>
                                 <th>FROM</th>
                                 <th>TO</th>
-                                <th id="guest-amount-header">FEE AMOUNT</th>
+                                <th id="order-amount-header">FEE AMOUNT</th>
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody id="guest-range-body"></tbody>
+                        <tbody id="order-amount-body"></tbody>
                     </table>
                 </div>
             </section>
@@ -81,41 +80,41 @@
     </div>
 
     <!-- Activation Warning Dialog -->
-    <div class="modal-backdrop" id="guest-activation-dialog" aria-hidden="true">
+    <div class="modal-backdrop" id="order-amount-activation-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
-                <p class="dialog-title">Add guest ranges first</p>
-                <p class="dialog-body" id="guest-activation-body">Add at least one guest range before activating this fee.</p>
+                <p class="dialog-title">Add subtotal ranges first</p>
+                <p class="dialog-body" id="order-amount-activation-body">Add at least one subtotal range before activating this fee.</p>
             </div>
             <div class="dialog-actions">
-                <button class="btn-activate" type="button" id="guest-activation-ok">Got it</button>
+                <button class="btn-activate" type="button" id="order-amount-activation-ok">Got it</button>
             </div>
         </div>
     </div>
 
     <!-- Open-ended Range Dialog -->
-    <div class="modal-backdrop" id="guest-open-ended-dialog" aria-hidden="true">
+    <div class="modal-backdrop" id="order-amount-open-ended-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
                 <p class="dialog-title">Open-ended range required</p>
-                <p class="dialog-body">Add an open-ended range to cover all guest counts.</p>
+                <p class="dialog-body">Add an open-ended range to cover all subtotals.</p>
             </div>
             <div class="dialog-actions">
-                <button class="btn-activate" type="button" id="guest-open-ended-ok">Got it</button>
+                <button class="btn-activate" type="button" id="order-amount-open-ended-ok">Got it</button>
             </div>
         </div>
     </div>
 
     <!-- Deactivation Confirmation Dialog -->
-    <div class="modal-backdrop" id="guest-deactivate-dialog" aria-hidden="true">
+    <div class="modal-backdrop" id="order-amount-deactivate-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
-                <p class="dialog-title">Deactivate guest count fee?</p>
-                <p class="dialog-body">This will stop applying guest count fees to new orders. Your ranges will be saved.</p>
+                <p class="dialog-title">Deactivate order amount fee?</p>
+                <p class="dialog-body">This will stop applying order amount fees to new orders. Your ranges will be saved.</p>
             </div>
             <div class="dialog-actions">
-                <button class="btn-secondary" type="button" id="guest-deactivate-cancel">Cancel</button>
-                <button class="btn-destructive" type="button" id="guest-deactivate-confirm">Deactivate</button>
+                <button class="btn-secondary" type="button" id="order-amount-deactivate-cancel">Cancel</button>
+                <button class="btn-destructive" type="button" id="order-amount-deactivate-confirm">Deactivate</button>
             </div>
         </div>
     </div>

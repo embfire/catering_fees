@@ -40,21 +40,7 @@
                 <div class="divider"></div>
             </section>
 
-            <section class="form-section">
-                <div class="form-row">
-                    <div class="form-label">
-                        <label>Calculation type</label>
-                    </div>
-                    <div class="form-input">
-                        <div class="segmented-control" id="order-amount-calc-type">
-                            <button class="segment-button" data-value="flat">Flat</button>
-                            <button class="segment-button" data-value="percent">Percentage</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="table-section">
+            <section class="table-section" data-variant="A">
                 <div class="table-header">
                     <h2 class="table-title">Subtotal ranges</h2>
                     <button class="btn-secondary btn-with-icon" id="add-range">
@@ -68,12 +54,65 @@
                             <tr>
                                 <th>FROM</th>
                                 <th>TO</th>
-                                <th id="order-amount-header">FEE AMOUNT</th>
+                                <th>CALCULATION</th>
+                                <th>FEE</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody id="order-amount-body"></tbody>
                     </table>
+                </div>
+            </section>
+
+            <section class="rules-section" data-variant="B">
+                <div class="rules-card">
+                    <h2 class="rules-title">Subtotal ranges</h2>
+                    <div class="rules-list" id="order-amount-rules-list"></div>
+                    <div class="rules-divider"></div>
+                    <form class="rules-add-row" id="order-amount-rule-form">
+                        <span class="rules-text">If the order amount is equal to or higher than</span>
+                        <div class="rules-field">
+                            <div class="input-field input-field-compact">
+                                <span class="input-prefix">$</span>
+                                <input type="number" class="text-input rules-input rules-input-min" id="order-amount-min-input" min="0" step="0.01" inputmode="decimal" placeholder="">
+                            </div>
+                            <p class="rules-error" id="order-amount-min-error"></p>
+                        </div>
+                        <span class="rules-text">the fee is</span>
+                        <div class="rules-field">
+                            <div class="input-field input-field-compact">
+                                <span class="input-prefix" id="order-amount-fee-prefix">$</span>
+                                <input type="number" class="text-input rules-input rules-input-fee" id="order-amount-fee-input" min="0" step="0.01" inputmode="decimal" placeholder="">
+                                <span class="input-suffix is-hidden" id="order-amount-fee-suffix">%</span>
+                            </div>
+                            <p class="rules-error" id="order-amount-fee-error"></p>
+                        </div>
+                        <div class="rules-field">
+                            <div class="input-wrapper">
+                                <div class="input-field select-field" id="order-amount-calc-select" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="select-text" id="order-amount-calc-display">Percent</span>
+                                    <div class="select-actions">
+                                        <span class="select-caret" aria-hidden="true">
+                                            <i class="ph ph-caret-down icon-16"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="select-menu" id="order-amount-calc-menu" role="listbox" aria-hidden="true">
+                                    <button class="select-option" type="button" role="option" data-value="flat">
+                                        <span class="select-check"></span>
+                                        <span class="select-option-text">Flat</span>
+                                    </button>
+                                    <button class="select-option is-selected" type="button" role="option" data-value="percent">
+                                        <span class="select-check"><i class="ph ph-check icon-16" aria-hidden="true"></i></span>
+                                        <span class="select-option-text">Percent</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" id="order-amount-calc-type" value="percent">
+                            </div>
+                        </div>
+                        <button class="btn-activate rules-add-button" type="submit">Add</button>
+                    </form>
+                    <p class="rules-error rules-error-global" id="order-amount-rule-global-error"></p>
                 </div>
             </section>
         </main>

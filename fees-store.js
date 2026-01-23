@@ -1,6 +1,24 @@
 (() => {
-    const STORE_KEY = 'cateringFeesStore';
+    const getVariantFromQuery = () => {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const value = (params.get('variant') || 'A').toUpperCase();
+            return value === 'B' ? 'B' : 'A';
+        } catch (error) {
+            return 'A';
+        }
+    };
+
+    const VARIANT = getVariantFromQuery();
+    const STORE_KEY = `cateringFeesStore__${VARIANT}`;
     const STORE_VERSION = 1;
+
+    window.FeesVariant = VARIANT;
+    try {
+        document.documentElement.dataset.feesVariant = VARIANT;
+    } catch (error) {
+        // ignore
+    }
 
     const createDefaultStore = () => ({
         version: STORE_VERSION,

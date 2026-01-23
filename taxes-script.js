@@ -1,5 +1,22 @@
 // Taxes and Fees Page Interactions
 document.addEventListener('DOMContentLoaded', function() {
+    const getVariant = () => {
+        const fromWindow = window.FeesVariant;
+        if (fromWindow === 'A' || fromWindow === 'B') {
+            return fromWindow;
+        }
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const value = (params.get('variant') || 'A').toUpperCase();
+            return value === 'B' ? 'B' : 'A';
+        } catch (error) {
+            return 'A';
+        }
+    };
+
+    const variant = getVariant();
+    const withVariant = (path) => `${path}?variant=${encodeURIComponent(variant)}`;
+
     // Tab Switching
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => {
@@ -25,13 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             const action = this.getAttribute('data-action');
             if (action === 'full-service') {
-                window.location.href = 'full-service-fee.html';
+                window.location.href = withVariant('full-service-fee.html');
             }
             if (action === 'guest-count') {
-                window.location.href = 'guest-count-fee-advanced.html';
+                window.location.href = withVariant('guest-count-fee-advanced.html');
             }
             if (action === 'order-amount') {
-                window.location.href = 'order-amount-fee-advanced.html';
+                window.location.href = withVariant('order-amount-fee-advanced.html');
             }
         });
     });

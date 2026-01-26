@@ -43,6 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const deactivateDialog = document.getElementById('order-amount-deactivate-dialog');
     const deactivateCancel = document.getElementById('order-amount-deactivate-cancel');
     const deactivateConfirm = document.getElementById('order-amount-deactivate-confirm');
+    const setSnackbarMessage = (message) => {
+        try {
+            window.sessionStorage.setItem('feesSnackbarMessage', message);
+        } catch (error) {
+            console.error('Unable to set snackbar message.', error);
+        }
+    };
 
     const parseCurrencyToCents = (value) => {
         const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ''));
@@ -102,6 +109,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const setDirty = (dirty) => {
             if (!unsavedBar) return;
+            if (!savedSettings.orderAmountActive) {
+                unsavedBar.classList.remove('is-visible');
+                document.body.classList.remove('has-unsaved-bar');
+                return;
+            }
             unsavedBar.classList.toggle('is-visible', dirty);
             document.body.classList.toggle('has-unsaved-bar', dirty);
         };
@@ -140,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const formatAmountLabel = (rule) => {
             if (rule.calcType === 'percent') {
-                return `${rule.percent || 0}%`;
+                return `${rule.percent || 0}% of subtotal`;
             }
             return `${formatDollarsSmart(rule.amountCents)} flat`;
         };
@@ -249,6 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (globalError) globalError.textContent = '';
             ruleMinInput?.classList.remove('input-error');
             ruleFeeInput?.classList.remove('input-error');
+            ruleMinInput?.closest('.input-field')?.classList.remove('input-error');
+            ruleFeeInput?.closest('.input-field')?.classList.remove('input-error');
         };
 
         const validateNewRule = () => {
@@ -262,6 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (minValue === '' || !Number.isFinite(minNumber) || minNumber < 0) {
                 if (minError) minError.textContent = 'Add amount';
                 ruleMinInput?.classList.add('input-error');
+                ruleMinInput?.closest('.input-field')?.classList.add('input-error');
                 valid = false;
             }
 
@@ -271,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     globalError.textContent = 'The order amount must be greater than the last added rule. To add lower values, delete rules with higher amounts first.';
                 }
                 ruleMinInput?.classList.add('input-error');
+                ruleMinInput?.closest('.input-field')?.classList.add('input-error');
                 valid = false;
             }
 
@@ -279,6 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
                     if (feeError) feeError.textContent = 'Add percent';
                     ruleFeeInput?.classList.add('input-error');
+                    ruleFeeInput?.closest('.input-field')?.classList.add('input-error');
                     valid = false;
                 }
             } else {
@@ -286,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!Number.isFinite(amount) || amount < 0) {
                     if (feeError) feeError.textContent = 'Add fee amount';
                     ruleFeeInput?.classList.add('input-error');
+                    ruleFeeInput?.closest('.input-field')?.classList.add('input-error');
                     valid = false;
                 }
             }
@@ -293,11 +311,48 @@ document.addEventListener('DOMContentLoaded', function() {
             return valid ? { minNumber, calcType } : null;
         };
 
+        const updateMinInputState = () => {
+            if (!ruleMinInput) return;
+            const wrapper = ruleMinInput.closest('.rules-field');
+            const isFirstRule = draftRules.length === 0;
+            if (isFirstRule) {
+                if (!ruleMinInput.value) {
+                    ruleMinInput.value = '0';
+                }
+                ruleMinInput.disabled = true;
+                wrapper?.classList.add('rules-field-muted');
+                return;
+            }
+            ruleMinInput.disabled = false;
+            wrapper?.classList.remove('rules-field-muted');
+        };
+
+        const addRuleFromInputs = () => {
+            const validation = validateNewRule();
+            if (!validation) return false;
+            const { minNumber, calcType } = validation;
+            const feeValue = ruleFeeInput?.value ?? '';
+            const newRule = {
+                id: `order_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+                minSubtotalCents: minNumber,
+                calcType,
+                amountCents: calcType === 'percent' ? 0 : parseCurrencyToCents(feeValue),
+                percent: calcType === 'percent' ? parsePercent(feeValue) : 0
+            };
+            draftRules = normalizeThresholds([...draftRules, newRule]);
+            renderRules();
+            setDirty(true);
+            if (ruleMinInput) ruleMinInput.value = '';
+            if (ruleFeeInput) ruleFeeInput.value = '';
+            return true;
+        };
+
         const renderRules = () => {
             if (!rulesList) return;
             rulesList.innerHTML = '';
             if (!draftRules.length) {
                 rulesList.innerHTML = '<p class="rules-empty">No rules added yet.</p>';
+                updateMinInputState();
                 return;
             }
             draftRules.forEach((rule, index) => {
@@ -315,6 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 rulesList.appendChild(row);
             });
+            updateMinInputState();
         };
 
         if (calcSelect && calcMenu) {
@@ -361,6 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
             deactivateConfirm.addEventListener('click', () => {
                 saveDraftToStore(false);
                 closeDeactivateDialog();
+                setSnackbarMessage('Fee deactivated');
                 goToIndex();
             });
         }
@@ -379,30 +436,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         ruleForm?.addEventListener('submit', (event) => {
             event.preventDefault();
-            const validation = validateNewRule();
-            if (!validation) return;
-            const { minNumber, calcType } = validation;
-            const feeValue = ruleFeeInput?.value ?? '';
-            const newRule = {
-                id: `order_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
-                minSubtotalCents: minNumber,
-                calcType,
-                amountCents: calcType === 'percent' ? 0 : parseCurrencyToCents(feeValue),
-                percent: calcType === 'percent' ? parsePercent(feeValue) : 0
-            };
-            draftRules = normalizeThresholds([...draftRules, newRule]);
-            renderRules();
-            setDirty(true);
-            if (ruleMinInput) ruleMinInput.value = '';
-            if (ruleFeeInput) ruleFeeInput.value = '';
+            addRuleFromInputs();
         });
 
         [ruleMinInput, ruleFeeInput].forEach((input) => {
             input?.addEventListener('input', () => {
                 clearErrors();
-                if (savedSettings.orderAmountActive) {
-                    setDirty(true);
-                }
             });
         });
 
@@ -413,6 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 saveDraftToStore(true);
+                setSnackbarMessage('Fee successfully activated');
                 goToIndex();
                 return;
             }
@@ -420,6 +460,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         unsavedSave?.addEventListener('click', () => {
+            const hasDraftInputs = Boolean(ruleFeeInput?.value) || (!ruleMinInput?.disabled && ruleMinInput?.value);
+            if (hasDraftInputs && !addRuleFromInputs()) {
+                return;
+            }
             if (!draftRules.length) {
                 openActivationDialog('Add at least one rule before saving.');
                 return;
@@ -878,6 +922,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 saveDraftToStore(true);
                 setDirty(false);
+                setSnackbarMessage('Fee successfully activated');
                 goToIndex();
                 return;
             }
@@ -925,6 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
             saveDraftToStore(false);
             setDirty(false);
             closeDeactivateDialog();
+            setSnackbarMessage('Fee deactivated');
             goToIndex();
         });
     }

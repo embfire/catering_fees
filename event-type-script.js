@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const getVariant = () => {
+        const fromWindow = window.FeesVariant;
+        if (fromWindow === 'A' || fromWindow === 'B') {
+            return fromWindow;
+        }
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const value = (params.get('variant') || 'A').toUpperCase();
+            return value === 'B' ? 'B' : 'A';
+        } catch (error) {
+            return 'A';
+        }
+    };
+
+    const variant = getVariant();
+    const withVariant = (path) => `${path}?variant=${encodeURIComponent(variant)}`;
+
     if (!window.FeesStore) {
         console.error('FeesStore is not available.');
         return;
@@ -191,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     closeButton.addEventListener('click', () => {
-        window.location.href = 'index.html';
+        window.location.href = withVariant('index.html');
     });
 
     selectButton.addEventListener('click', (event) => {
@@ -275,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             FeesStore.upsertEventTypeRule(payload);
-            window.location.href = 'index.html';
+            window.location.href = withVariant('index.html');
         } catch (error) {
             const message = error.message || 'Unable to save event type fee.';
             if (message.toLowerCase().includes('event type')) {

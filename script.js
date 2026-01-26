@@ -1,24 +1,44 @@
-// Full-service fee configuration with unsaved changes bar
+// Full-service fee configuration with mode selector
 document.addEventListener('DOMContentLoaded', function() {
-    const segmentButtons = Array.from(document.querySelectorAll('.segment-button'));
-    const textInput = document.querySelector('.text-input');
-    const inputField = document.querySelector('.input-field');
+    const getVariant = () => {
+        const fromWindow = window.FeesVariant;
+        if (fromWindow === 'A' || fromWindow === 'B') {
+            return fromWindow;
+        }
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const value = (params.get('variant') || 'A').toUpperCase();
+            return value === 'B' ? 'B' : 'A';
+        } catch (error) {
+            return 'A';
+        }
+    };
+
+    const variant = getVariant();
+    const withVariant = (path) => `${path}?variant=${encodeURIComponent(variant)}`;
     const closeButton = document.querySelector('.close-button');
     const toggleButton = document.getElementById('full-service-toggle');
     const unsavedBar = document.getElementById('full-service-unsaved');
     const unsavedCancel = document.getElementById('full-service-cancel');
     const unsavedSave = document.getElementById('full-service-save');
-    const prefixLabel = document.getElementById('fee-prefix');
-    const suffixLabel = document.getElementById('fee-suffix');
-    const errorLabel = document.getElementById('full-service-error');
-    const hintLabel = document.getElementById('fee-hint');
     const deactivateDialog = document.getElementById('full-service-deactivate-dialog');
     const deactivateCancel = document.getElementById('full-service-deactivate-cancel');
     const deactivateConfirm = document.getElementById('full-service-deactivate-confirm');
+    const modeButtons = Array.from(document.querySelectorAll('#full-service-mode .segment-button'));
+    const modeSections = Array.from(document.querySelectorAll('.mode-section'));
+    const aLaCarteError = document.getElementById('a-la-carte-error');
+    const aLaCarteErrorText = aLaCarteError?.querySelector('.inline-error-text');
+    const setSnackbarMessage = (message) => {
+        try {
+            window.sessionStorage.setItem('feesSnackbarMessage', message);
+        } catch (error) {
+            console.error('Unable to set snackbar message.', error);
+        }
+    };
 
     if (closeButton) {
         closeButton.addEventListener('click', function() {
-            window.location.href = 'index.html';
+            window.location.href = withVariant('index.html');
         });
     }
 
@@ -42,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return numeric;
     };
+
     const formatDollarInput = (input) => {
         if (!input) return;
         const rawValue = String(input.value || '').trim();
@@ -50,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!Number.isFinite(numeric)) return;
         input.value = numeric.toFixed(2);
     };
+
     const formatPercentInput = (input) => {
         if (!input) return;
         const rawValue = String(input.value || '').trim();
@@ -59,29 +81,36 @@ document.addEventListener('DOMContentLoaded', function() {
         input.value = String(numeric);
     };
 
-    const setSelectedCalcType = (value) => {
-        segmentButtons.forEach(btn => {
+    const setSelectedCalcType = (buttons, value, prefix, suffix) => {
+        buttons.forEach(btn => {
             btn.classList.toggle('segment-selected', btn.dataset.value === value);
         });
-        if (prefixLabel) {
-            prefixLabel.textContent = '$';
-            prefixLabel.classList.toggle('is-hidden', value === 'percent');
+        if (prefix) {
+            prefix.textContent = '$';
+            prefix.classList.toggle('is-hidden', value === 'percent');
         }
-        if (suffixLabel) {
-            suffixLabel.classList.toggle('is-hidden', value !== 'percent');
-        }
-        if (hintLabel) {
-            hintLabel.textContent = value === 'percent'
-                ? 'Percent of subtotal charged'
-                : value === 'perPerson'
-                    ? 'Amount charged per person'
-                    : 'Fixed amount charged';
+        if (suffix) {
+            suffix.classList.toggle('is-hidden', value !== 'percent');
         }
     };
 
-    const getSelectedCalcType = () => {
-        const selected = segmentButtons.find(btn => btn.classList.contains('segment-selected'));
+    const getSelectedCalcType = (buttons) => {
+        const selected = buttons.find(btn => btn.classList.contains('segment-selected'));
         return selected ? selected.dataset.value : 'flat';
+    };
+
+    const getSelectedMode = () => {
+        const selected = modeButtons.find(btn => btn.classList.contains('segment-selected'));
+        return selected ? selected.dataset.value : 'bundle';
+    };
+
+    const setSelectedMode = (mode) => {
+        modeButtons.forEach(btn => {
+            btn.classList.toggle('segment-selected', btn.dataset.value === mode);
+        });
+        modeSections.forEach(section => {
+            section.hidden = section.dataset.mode !== mode;
+        });
     };
 
     const updateToggleLabel = (isActive) => {
@@ -103,128 +132,313 @@ document.addEventListener('DOMContentLoaded', function() {
         deactivateDialog.setAttribute('aria-hidden', 'true');
     };
 
-    const cloneRule = (rule) => JSON.parse(JSON.stringify(rule));
-    let savedRule = cloneRule(FeesStore.getFullServiceRule());
-    let draftRule = cloneRule(savedRule);
+    const cloneConfig = (config) => JSON.parse(JSON.stringify(config));
+    const createEmptyRule = () => ({
+        calcType: 'flat',
+        amountCents: 0,
+        percent: 0,
+        active: false
+    });
+    const createEmptyConfig = () => ({
+        mode: 'bundle',
+        bundle: createEmptyRule(),
+        components: {
+            cutlery: createEmptyRule(),
+            staffing: createEmptyRule(),
+            setup: createEmptyRule(),
+            cleanup: createEmptyRule()
+        }
+    });
+    let savedConfig = cloneConfig(FeesStore.getFullServiceConfig());
+    let draftConfig = cloneConfig(savedConfig);
     let isDirty = false;
+
+    const bundleSection = document.querySelector('.mode-section[data-mode="bundle"]');
+    const bundleCalcButtons = Array.from(bundleSection?.querySelectorAll('[data-field="calcType"] .segment-button') || []);
+    const bundleAmountInput = bundleSection?.querySelector('#bundle-fee-amount');
+    const bundleInputField = bundleSection?.querySelector('.input-field');
+    const bundlePrefix = bundleSection?.querySelector('#bundle-fee-prefix');
+    const bundleSuffix = bundleSection?.querySelector('#bundle-fee-suffix');
+    const bundleError = bundleSection?.querySelector('#bundle-fee-error');
+
+    const componentRows = Array.from(document.querySelectorAll('.a-la-carte-row'));
+    const componentRefs = componentRows.reduce((acc, row) => {
+        const key = row.dataset.component;
+        acc[key] = {
+            row,
+            calcButtons: Array.from(row.querySelectorAll('[data-field="calcType"] .segment-button')),
+            amountInput: row.querySelector('[data-field="amount"]'),
+            inputField: row.querySelector('.input-field'),
+            prefix: row.querySelector('[data-field="prefix"]'),
+            suffix: row.querySelector('[data-field="suffix"]'),
+            error: row.querySelector('[data-field="error"]')
+        };
+        return acc;
+    }, {});
 
     const setDirty = (dirty) => {
         isDirty = dirty;
+        const showDirty = dirty && getActiveState(savedConfig);
         if (unsavedBar) {
-            unsavedBar.classList.toggle('is-visible', dirty);
+            unsavedBar.classList.toggle('is-visible', showDirty);
         }
-        document.body.classList.toggle('has-unsaved-bar', dirty);
+        document.body.classList.toggle('has-unsaved-bar', showDirty);
     };
 
-    const setFormFromRule = (rule) => {
-        setSelectedCalcType(rule.calcType || 'flat');
-        if (!rule.active) {
-            textInput.value = '';
-            return;
+    const clearError = (errorLabel, field) => {
+        if (errorLabel) {
+            errorLabel.textContent = '';
         }
+        if (field) {
+            field.classList.remove('input-error');
+        }
+    };
+
+    const setError = (errorLabel, field, message) => {
+        if (errorLabel) {
+            errorLabel.textContent = message || '';
+        }
+        if (field && message) {
+            field.classList.add('input-error');
+        }
+    };
+
+    const validateRule = (rule) => {
         if (rule.calcType === 'percent') {
-            textInput.value = rule.percent ?? '';
-        } else {
-            textInput.value = rule.amountCents ? (rule.amountCents / 100).toFixed(2) : '';
+            if (!Number.isFinite(rule.percent) || rule.percent < 0 || rule.percent > 100) {
+                return 'Percent must be between 0 and 100.';
+            }
+            return '';
         }
+        if (!Number.isFinite(rule.amountCents) || rule.amountCents < 0) {
+            return 'Amount must be 0 or greater.';
+        }
+        return '';
     };
 
-    const readFormToDraft = () => {
-        const calcType = getSelectedCalcType();
+    const normalizeRuleFromForm = (calcButtons, amountInput, existingRule) => {
+        const calcType = getSelectedCalcType(calcButtons);
         const amountValue = calcType === 'percent'
-            ? parsePercent(textInput.value)
-            : parseCurrencyToCents(textInput.value);
-        draftRule = {
-            ...draftRule,
+            ? parsePercent(amountInput?.value)
+            : parseCurrencyToCents(amountInput?.value);
+        return {
             calcType,
+            active: existingRule?.active ?? false,
             amountCents: calcType === 'percent' ? 0 : amountValue,
             percent: calcType === 'percent' ? amountValue : 0
         };
     };
 
-    const isDraftDifferent = () => JSON.stringify({
-        calcType: draftRule.calcType,
-        amountCents: draftRule.amountCents,
-        percent: draftRule.percent
-    }) !== JSON.stringify({
-        calcType: savedRule.calcType,
-        amountCents: savedRule.amountCents,
-        percent: savedRule.percent
-    });
+    const applyRuleToForm = (rule, calcButtons, amountInput, prefix, suffix) => {
+        setSelectedCalcType(calcButtons, rule.calcType || 'flat', prefix, suffix);
+        if (!amountInput) return;
+        if (rule.calcType === 'percent') {
+            amountInput.value = rule.percent ?? '';
+        } else {
+            amountInput.value = rule.amountCents ? (rule.amountCents / 100).toFixed(2) : '';
+        }
+    };
+
+    const readFormToDraft = () => {
+        const mode = getSelectedMode();
+        draftConfig.mode = mode;
+        draftConfig.bundle = {
+            ...draftConfig.bundle,
+            ...normalizeRuleFromForm(bundleCalcButtons, bundleAmountInput, draftConfig.bundle)
+        };
+        Object.keys(componentRefs).forEach(key => {
+            const ref = componentRefs[key];
+            draftConfig.components[key] = {
+                ...draftConfig.components[key],
+                ...normalizeRuleFromForm(ref.calcButtons, ref.amountInput, draftConfig.components[key])
+            };
+        });
+    };
+
+    const isDraftDifferent = () => JSON.stringify(draftConfig) !== JSON.stringify(savedConfig);
+
+    const getActiveState = (config) => {
+        if (config.mode === 'a_la_carte') {
+            return ['cutlery', 'staffing', 'setup', 'cleanup']
+                .every(key => config.components?.[key]?.active);
+        }
+        return !!config.bundle?.active;
+    };
+
+    const setFormFromConfig = (config) => {
+        setSelectedMode(config.mode || 'bundle');
+        applyRuleToForm(config.bundle, bundleCalcButtons, bundleAmountInput, bundlePrefix, bundleSuffix);
+        Object.keys(componentRefs).forEach(key => {
+            const ref = componentRefs[key];
+            const rule = config.components?.[key] || {};
+            applyRuleToForm(rule, ref.calcButtons, ref.amountInput, ref.prefix, ref.suffix);
+            clearError(ref.error, ref.inputField);
+        });
+        clearError(bundleError, bundleInputField);
+        if (aLaCarteError) {
+            aLaCarteError.hidden = true;
+        }
+        updateToggleLabel(getActiveState(config));
+    };
 
     const loadState = () => {
-        savedRule = cloneRule(FeesStore.getFullServiceRule());
-        draftRule = cloneRule(savedRule);
-        setFormFromRule(draftRule);
-        updateToggleLabel(!!savedRule.active);
+        savedConfig = cloneConfig(FeesStore.getFullServiceConfig());
+        draftConfig = cloneConfig(savedConfig);
+        setFormFromConfig(draftConfig);
         setDirty(false);
     };
 
-    if (textInput && inputField) {
-        textInput.addEventListener('focus', function() {
-            inputField.classList.add('input-focused');
+    if (bundleAmountInput && bundleInputField) {
+        bundleAmountInput.addEventListener('focus', function() {
+            bundleInputField.classList.add('input-focused');
         });
 
-        textInput.addEventListener('blur', function() {
-            inputField.classList.remove('input-focused');
-            const calcType = getSelectedCalcType();
+        bundleAmountInput.addEventListener('blur', function() {
+            bundleInputField.classList.remove('input-focused');
+            const calcType = getSelectedCalcType(bundleCalcButtons);
             if (calcType !== 'percent') {
-                formatDollarInput(textInput);
+                formatDollarInput(bundleAmountInput);
             }
         });
 
-        textInput.addEventListener('input', function() {
-            inputField.classList.remove('input-error');
-            if (errorLabel) {
-                errorLabel.textContent = '';
-            }
+        bundleAmountInput.addEventListener('input', function() {
+            clearError(bundleError, bundleInputField);
             readFormToDraft();
-            if (savedRule.active) {
-                setDirty(isDraftDifferent());
-            }
+            setDirty(isDraftDifferent());
         });
     }
 
-    segmentButtons.forEach(button => {
+    bundleCalcButtons.forEach(button => {
         button.addEventListener('click', function() {
-            setSelectedCalcType(this.dataset.value);
+            setSelectedCalcType(bundleCalcButtons, this.dataset.value, bundlePrefix, bundleSuffix);
             if (this.dataset.value === 'percent') {
-                formatPercentInput(textInput);
+                formatPercentInput(bundleAmountInput);
             } else {
-                formatDollarInput(textInput);
+                formatDollarInput(bundleAmountInput);
             }
             readFormToDraft();
-            if (savedRule.active) {
-                setDirty(isDraftDifferent());
-            }
+            setDirty(isDraftDifferent());
         });
     });
 
+    Object.values(componentRefs).forEach(ref => {
+        if (ref.amountInput && ref.inputField) {
+            ref.amountInput.addEventListener('focus', () => ref.inputField.classList.add('input-focused'));
+            ref.amountInput.addEventListener('blur', () => {
+                ref.inputField.classList.remove('input-focused');
+                const calcType = getSelectedCalcType(ref.calcButtons);
+                if (calcType !== 'percent') {
+                    formatDollarInput(ref.amountInput);
+                }
+            });
+            ref.amountInput.addEventListener('input', () => {
+                clearError(ref.error, ref.inputField);
+                if (aLaCarteError) {
+                    aLaCarteError.hidden = true;
+                }
+                readFormToDraft();
+                setDirty(isDraftDifferent());
+            });
+        }
+
+        ref.calcButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setSelectedCalcType(ref.calcButtons, button.dataset.value, ref.prefix, ref.suffix);
+                if (button.dataset.value === 'percent') {
+                    formatPercentInput(ref.amountInput);
+                } else {
+                    formatDollarInput(ref.amountInput);
+                }
+                readFormToDraft();
+                setDirty(isDraftDifferent());
+            });
+        });
+    });
+
+    modeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            setSelectedMode(button.dataset.value);
+            readFormToDraft();
+            setDirty(isDraftDifferent());
+        });
+    });
+
+    const validateCurrentConfig = () => {
+        let isValid = true;
+        readFormToDraft();
+        clearError(bundleError, bundleInputField);
+        if (aLaCarteError) {
+            aLaCarteError.hidden = true;
+        }
+
+        if (draftConfig.mode === 'bundle') {
+            const message = validateRule(draftConfig.bundle);
+            if (message) {
+                setError(bundleError, bundleInputField, message);
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
+        componentKeys.forEach(key => {
+            const ref = componentRefs[key];
+            const rule = draftConfig.components[key];
+            const message = validateRule(rule);
+            if (message) {
+                setError(ref.error, ref.inputField, message);
+                isValid = false;
+            }
+        });
+        if (!isValid && aLaCarteError) {
+            if (aLaCarteErrorText) {
+                aLaCarteErrorText.textContent = 'All a-la-carte components must be configured.';
+            }
+            aLaCarteError.hidden = false;
+        }
+        return isValid;
+    };
+
+    const activateCurrentConfig = () => {
+        if (draftConfig.mode === 'bundle') {
+            draftConfig.bundle.active = true;
+            return;
+        }
+        ['cutlery', 'staffing', 'setup', 'cleanup'].forEach(key => {
+            if (draftConfig.components[key]) {
+                draftConfig.components[key].active = true;
+            }
+        });
+    };
+
+    const deactivateCurrentConfig = () => {
+        if (draftConfig.mode === 'bundle') {
+            draftConfig.bundle.active = false;
+            return;
+        }
+        ['cutlery', 'staffing', 'setup', 'cleanup'].forEach(key => {
+            if (draftConfig.components[key]) {
+                draftConfig.components[key].active = false;
+            }
+        });
+    };
+
     if (toggleButton) {
         toggleButton.addEventListener('click', function() {
-            errorLabel.textContent = '';
-            if (inputField) {
-                inputField.classList.remove('input-error');
-            }
-
-            if (!savedRule.active) {
-                readFormToDraft();
-                const updatedRule = {
-                    ...draftRule,
-                    active: true
-                };
+            if (!getActiveState(savedConfig)) {
+                if (!validateCurrentConfig()) {
+                    return;
+                }
+                activateCurrentConfig();
                 try {
-                    FeesStore.updateFullServiceRule(updatedRule);
-                    savedRule = cloneRule(updatedRule);
-                    draftRule = cloneRule(updatedRule);
+                    FeesStore.updateFullServiceConfig(draftConfig);
+                    savedConfig = cloneConfig(draftConfig);
                     updateToggleLabel(true);
                     setDirty(false);
-                    window.location.href = 'index.html';
+                    setSnackbarMessage('Fee successfully activated');
+                    window.location.href = withVariant('index.html');
                 } catch (error) {
-                    errorLabel.textContent = error.message || 'Unable to save full-service fee.';
-                    if (inputField) {
-                        inputField.classList.add('input-error');
-                    }
+                    setError(bundleError, bundleInputField, error.message || 'Unable to save full-service fee.');
                 }
                 return;
             }
@@ -238,49 +452,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (deactivateConfirm) {
         deactivateConfirm.addEventListener('click', () => {
-            draftRule = cloneRule(savedRule);
-            setFormFromRule(draftRule);
-            const updatedRule = {
-                ...savedRule,
-                active: false
-            };
-            FeesStore.updateFullServiceRule(updatedRule);
-            savedRule = cloneRule(updatedRule);
+            draftConfig = createEmptyConfig();
+            FeesStore.updateFullServiceConfig(draftConfig);
+            savedConfig = cloneConfig(draftConfig);
             updateToggleLabel(false);
             setDirty(false);
             closeDeactivateDialog();
-            window.location.href = 'index.html';
+            setSnackbarMessage('Fee deactivated');
+            window.location.href = withVariant('index.html');
         });
     }
 
     if (unsavedSave) {
         unsavedSave.addEventListener('click', () => {
-            errorLabel.textContent = '';
-            if (inputField) {
-                inputField.classList.remove('input-error');
+            if (!validateCurrentConfig()) {
+                return;
             }
-            const updatedRule = {
-                ...draftRule,
-                active: true
-            };
+            activateCurrentConfig();
             try {
-                FeesStore.updateFullServiceRule(updatedRule);
-                savedRule = cloneRule(updatedRule);
-                draftRule = cloneRule(updatedRule);
+                FeesStore.updateFullServiceConfig(draftConfig);
+                savedConfig = cloneConfig(draftConfig);
                 setDirty(false);
+                updateToggleLabel(true);
             } catch (error) {
-                errorLabel.textContent = error.message || 'Unable to save full-service fee.';
-                if (inputField) {
-                    inputField.classList.add('input-error');
-                }
+                setError(bundleError, bundleInputField, error.message || 'Unable to save full-service fee.');
             }
         });
     }
 
     if (unsavedCancel) {
         unsavedCancel.addEventListener('click', () => {
-            draftRule = cloneRule(savedRule);
-            setFormFromRule(draftRule);
+            draftConfig = cloneConfig(savedConfig);
+            setFormFromConfig(draftConfig);
             setDirty(false);
         });
     }

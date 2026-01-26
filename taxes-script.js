@@ -117,6 +117,27 @@ document.addEventListener('DOMContentLoaded', function() {
     createMobileMenuToggle();
     window.addEventListener('resize', createMobileMenuToggle);
 
+    const snackbar = document.getElementById('fee-snackbar');
+    const snackbarMessage = snackbar?.querySelector('.snackbar-message');
+    const showSnackbar = (message) => {
+        if (!snackbar || !snackbarMessage) return;
+        snackbarMessage.textContent = message;
+        snackbar.classList.add('is-visible');
+        window.setTimeout(() => {
+            snackbar.classList.remove('is-visible');
+        }, 3000);
+    };
+
+    try {
+        const message = window.sessionStorage.getItem('feesSnackbarMessage');
+        if (message) {
+            window.sessionStorage.removeItem('feesSnackbarMessage');
+            showSnackbar(message);
+        }
+    } catch (error) {
+        console.error('Unable to read snackbar message.', error);
+    }
+
     if (!window.FeesStore) {
         console.error('FeesStore is not available.');
         return;
@@ -151,13 +172,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const guestRules = FeesStore.getGuestCountRules();
         const settings = FeesStore.getSettings();
         const hasGuestActive = !!settings.guestCountActive;
-        const fullServiceRule = FeesStore.getFullServiceRule();
+        const fullServiceConfig = FeesStore.getFullServiceConfig();
         const hasOrderAmountActive = !!settings.orderAmountActive;
+        const hasFullServiceActive = fullServiceConfig.mode === 'a_la_carte'
+            ? ['cutlery', 'staffing', 'setup', 'cleanup']
+                .every(key => fullServiceConfig.components?.[key]?.active)
+            : !!fullServiceConfig.bundle?.active;
         setStatusTag('guest-count-status', hasGuestActive);
-        setStatusTag('full-service-status', !!fullServiceRule.active);
+        setStatusTag('full-service-status', hasFullServiceActive);
         setStatusTag('order-amount-status', hasOrderAmountActive);
         setActionLabel('guest-count-action', hasGuestActive);
-        setActionLabel('full-service-action', !!fullServiceRule.active);
+        setActionLabel('full-service-action', hasFullServiceActive);
         setActionLabel('order-amount-action', hasOrderAmountActive);
     };
 
@@ -204,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     addFeeButton.addEventListener('click', () => {
-        window.location.href = 'event-type-fee.html';
+        window.location.href = withVariant('event-type-fee.html');
     });
 
     tableBody.addEventListener('click', (event) => {
@@ -227,7 +252,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const rule = FeesStore.getEventTypeRules().find(item => item.id === ruleId);
         if (rule) {
-            window.location.href = `event-type-fee.html?id=${encodeURIComponent(rule.id)}`;
+            const encodedId = encodeURIComponent(rule.id);
+            const encodedVariant = encodeURIComponent(variant);
+            window.location.href = `event-type-fee.html?id=${encodedId}&variant=${encodedVariant}`;
         }
     });
 

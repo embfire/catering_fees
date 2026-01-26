@@ -66,9 +66,8 @@
 
             <section class="rules-section" data-variant="B">
                 <div class="rules-card">
-                    <h2 class="rules-title">Guest count ranges</h2>
+                    <h2 class="rules-title">Guest count thresholds</h2>
                     <div class="rules-list" id="guest-count-rules-list"></div>
-                    <div class="rules-divider"></div>
                     <form class="rules-add-row" id="guest-count-rule-form">
                         <span class="rules-text">If the number of guest is equal to or higher than</span>
                         <div class="rules-field">
@@ -159,6 +158,16 @@
                 <button class="btn-destructive" type="button" id="guest-deactivate-confirm">Deactivate</button>
             </div>
         </div>
+    </div>
+
+    <div class="snackbar" id="fee-snackbar" role="status" aria-live="polite">
+        <span class="snackbar-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="11" cy="11" rx="8.00003" ry="8" fill="#44AB0B"/>
+                <path d="M13.6721 7.58953C13.8988 7.24284 14.3636 7.14556 14.7103 7.37224C15.0254 7.57831 15.1345 7.98118 14.9814 8.31319L14.9276 8.4104L10.6776 14.9104C10.4289 15.2907 9.91 15.3585 9.57265 15.0788L9.49235 15.0017L7.24234 12.5017C6.96525 12.1938 6.9902 11.7196 7.29809 11.4425C7.57798 11.1906 7.99534 11.1883 8.2771 11.4213L8.35729 11.4982L9.95482 13.274L13.6721 7.58953Z" fill="white"/>
+            </svg>
+        </span>
+        <span class="snackbar-message">Snackbar message</span>
     </div>
 </body>
 </html>

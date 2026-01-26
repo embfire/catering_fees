@@ -36,19 +36,33 @@
             <!-- Page Header -->
             <section class="page-header">
                 <h1 class="page-title">Full-service fee</h1>
-                <p class="page-description">Charge when customers select setup & cleanup service</p>
+                <p class="page-description">Choose a bundled fee or configure every service separately.</p>
                 <div class="divider"></div>
             </section>
 
-            <!-- Form Fields -->
+            <!-- Configuration Mode -->
             <section class="form-section">
-                <!-- Calculation Type -->
+                <div class="form-row">
+                    <div class="form-label">
+                        <label>Configuration</label>
+                    </div>
+                    <div class="form-input">
+                        <div class="segmented-control" id="full-service-mode">
+                            <button class="segment-button segment-selected" data-value="bundle">Full-service bundle</button>
+                            <button class="segment-button" data-value="a_la_carte">A-la-carte</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bundle Configuration -->
+            <section class="form-section mode-section" data-mode="bundle">
                 <div class="form-row">
                     <div class="form-label">
                         <label>Calculation type</label>
                     </div>
                     <div class="form-input">
-                        <div class="segmented-control">
+                        <div class="segmented-control" data-field="calcType">
                             <button class="segment-button segment-selected" data-value="flat">Flat</button>
                             <button class="segment-button" data-value="perPerson">Per person</button>
                             <button class="segment-button" data-value="percent">Percentage</button>
@@ -56,21 +70,115 @@
                     </div>
                 </div>
 
-                <!-- Fee Amount -->
                 <div class="form-row">
                     <div class="form-label">
-                        <label for="fee-amount">Fee amount</label>
+                        <label for="bundle-fee-amount">Fee amount</label>
                     </div>
                     <div class="form-input">
                         <div class="input-wrapper">
                             <div class="input-field">
-                                <span class="input-prefix" id="fee-prefix">$</span>
-                                <input type="text" id="fee-amount" class="text-input" value="">
-                                <span class="input-suffix is-hidden" id="fee-suffix">%</span>
+                                <span class="input-prefix" id="bundle-fee-prefix">$</span>
+                                <input type="text" id="bundle-fee-amount" class="text-input" value="">
+                                <span class="input-suffix is-hidden" id="bundle-fee-suffix">%</span>
                             </div>
-                            <p class="form-error" id="full-service-error" role="alert"></p>
+                            <p class="form-error" id="bundle-fee-error" role="alert"></p>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- A-la-carte Components -->
+            <section class="form-section mode-section" data-mode="a_la_carte" hidden>
+                <div class="form-row a-la-carte-row" data-component="cutlery">
+                    <div class="form-label">
+                        <label>Cutlery</label>
+                    </div>
+                    <div class="form-input form-input-inline">
+                        <div class="segmented-control" data-field="calcType">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" data-field="prefix">$</span>
+                                <input type="text" class="text-input" data-field="amount" value="">
+                                <span class="input-suffix is-hidden" data-field="suffix">%</span>
+                            </div>
+                            <p class="form-error" data-field="error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row a-la-carte-row" data-component="staffing">
+                    <div class="form-label">
+                        <label>Staffing</label>
+                    </div>
+                    <div class="form-input form-input-inline">
+                        <div class="segmented-control" data-field="calcType">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" data-field="prefix">$</span>
+                                <input type="text" class="text-input" data-field="amount" value="">
+                                <span class="input-suffix is-hidden" data-field="suffix">%</span>
+                            </div>
+                            <p class="form-error" data-field="error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row a-la-carte-row" data-component="setup">
+                    <div class="form-label">
+                        <label>Setup</label>
+                    </div>
+                    <div class="form-input form-input-inline">
+                        <div class="segmented-control" data-field="calcType">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" data-field="prefix">$</span>
+                                <input type="text" class="text-input" data-field="amount" value="">
+                                <span class="input-suffix is-hidden" data-field="suffix">%</span>
+                            </div>
+                            <p class="form-error" data-field="error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row a-la-carte-row" data-component="cleanup">
+                    <div class="form-label">
+                        <label>Cleanup</label>
+                    </div>
+                    <div class="form-input form-input-inline">
+                        <div class="segmented-control" data-field="calcType">
+                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
+                            <button class="segment-button" data-value="perPerson">Per person</button>
+                            <button class="segment-button" data-value="percent">Percentage</button>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="input-field">
+                                <span class="input-prefix" data-field="prefix">$</span>
+                                <input type="text" class="text-input" data-field="amount" value="">
+                                <span class="input-suffix is-hidden" data-field="suffix">%</span>
+                            </div>
+                            <p class="form-error" data-field="error" role="alert"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="inline-error" id="a-la-carte-error" role="alert" hidden>
+                    <svg class="inline-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="8" cy="8" r="8" fill="#FF3B30"/>
+                        <path d="M8 3.5C7.58579 3.5 7.25 3.83579 7.25 4.25V9.25C7.25 9.66422 7.58579 10 8 10C8.41421 10 8.74999 9.66421 8.74999 9.25V4.25C8.74999 3.83579 8.41421 3.5 8 3.5Z" fill="white"/>
+                        <path d="M8 12.5C8.41421 12.5 8.74999 12.1642 8.74999 11.75C8.74999 11.3358 8.41421 11 8 11C7.58579 11 7.25 11.3358 7.25 11.75C7.25 12.1642 7.58579 12.5 8 12.5Z" fill="white"/>
+                    </svg>
+                    <span class="inline-error-text">All a-la-carte components must be configured.</span>
                 </div>
             </section>
         </main>

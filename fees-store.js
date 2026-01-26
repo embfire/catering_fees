@@ -20,17 +20,30 @@
         // ignore
     }
 
+    const createDefaultRule = () => ({
+        calcType: 'flat',
+        amountCents: 0,
+        percent: 0,
+        active: false
+    });
+
+    const createDefaultFullServiceConfig = () => ({
+        mode: 'bundle',
+        bundle: createDefaultRule(),
+        components: {
+            cutlery: createDefaultRule(),
+            staffing: createDefaultRule(),
+            setup: createDefaultRule(),
+            cleanup: createDefaultRule()
+        }
+    });
+
     const createDefaultStore = () => ({
         version: STORE_VERSION,
         eventTypeRules: [],
         guestCountRules: [],
         orderAmountRules: [],
-        fullServiceRule: {
-            calcType: 'flat',
-            amountCents: 0,
-            percent: 0,
-            active: false
-        },
+        fullServiceConfig: createDefaultFullServiceConfig(),
         settings: {
             guestCountMissingPolicy: 'skip',
             guestCountActive: false,
@@ -54,6 +67,26 @@
                 return createDefaultStore();
             }
             const store = createDefaultStore();
+            const nextFullServiceConfig = parsed.fullServiceConfig
+                ? {
+                    ...store.fullServiceConfig,
+                    ...(parsed.fullServiceConfig || {}),
+                    bundle: {
+                        ...store.fullServiceConfig.bundle,
+                        ...(parsed.fullServiceConfig.bundle || {})
+                    },
+                    components: {
+                        ...store.fullServiceConfig.components,
+                        ...(parsed.fullServiceConfig.components || {})
+                    }
+                }
+                : {
+                    ...store.fullServiceConfig,
+                    bundle: {
+                        ...store.fullServiceConfig.bundle,
+                        ...(parsed.fullServiceRule || {})
+                    }
+                };
             return {
                 ...store,
                 ...parsed,
@@ -61,10 +94,7 @@
                     ...store.settings,
                     ...(parsed.settings || {})
                 },
-                fullServiceRule: {
-                    ...store.fullServiceRule,
-                    ...(parsed.fullServiceRule || {})
-                },
+                fullServiceConfig: nextFullServiceConfig,
                 orderAmountRules: parsed.orderAmountRules || store.orderAmountRules
             };
         } catch (error) {
@@ -325,10 +355,32 @@
         return { valid: true, message: '' };
     };
 
+    const validateFullServiceConfig = (config) => {
+        const mode = config.mode === 'a_la_carte' ? 'a_la_carte' : 'bundle';
+        if (mode === 'bundle') {
+            return validateFullServiceRule(config.bundle || createDefaultRule());
+        }
+
+        const components = config.components || {};
+        const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
+        for (const key of componentKeys) {
+            const validation = validateFullServiceRule(components[key] || createDefaultRule());
+            if (!validation.valid) {
+                return validation;
+            }
+        }
+
+        const activeCount = componentKeys.filter(key => components[key]?.active).length;
+        if (activeCount > 0 && activeCount < componentKeys.length) {
+            return { valid: false, message: 'All components must be active in a-la-carte mode.' };
+        }
+        return { valid: true, message: '' };
+    };
+
     const getEventTypeRules = () => deepClone(loadStore().eventTypeRules);
     const getGuestCountRules = () => deepClone(loadStore().guestCountRules);
     const getOrderAmountRules = () => deepClone(loadStore().orderAmountRules);
-    const getFullServiceRule = () => deepClone(loadStore().fullServiceRule);
+    const getFullServiceConfig = () => deepClone(loadStore().fullServiceConfig);
     const getSettings = () => deepClone(loadStore().settings);
 
     const upsertEventTypeRule = (rule) => withStore((store) => {
@@ -408,17 +460,25 @@
         store.orderAmountRules = store.orderAmountRules.filter((item) => item.id !== id);
     });
 
-    const updateFullServiceRule = (rule) => withStore((store) => {
-        const payload = {
-            ...store.fullServiceRule,
-            ...rule
+    const updateFullServiceConfig = (config) => withStore((store) => {
+        const nextConfig = {
+            ...store.fullServiceConfig,
+            ...config,
+            bundle: {
+                ...store.fullServiceConfig.bundle,
+                ...(config.bundle || {})
+            },
+            components: {
+                ...store.fullServiceConfig.components,
+                ...(config.components || {})
+            }
         };
-        payload.active = payload.active === true;
-        const validation = validateFullServiceRule(payload);
+
+        const validation = validateFullServiceConfig(nextConfig);
         if (!validation.valid) {
             throw new Error(validation.message);
         }
-        store.fullServiceRule = payload;
+        store.fullServiceConfig = nextConfig;
     });
 
     const updateSettings = (settings) => withStore((store) => {
@@ -478,7 +538,7 @@
         getEventTypeRules,
         getGuestCountRules,
         getOrderAmountRules,
-        getFullServiceRule,
+        getFullServiceConfig,
         getSettings,
         upsertEventTypeRule,
         deleteEventTypeRule,
@@ -486,12 +546,13 @@
         deleteGuestCountRule,
         upsertOrderAmountRule,
         deleteOrderAmountRule,
-        updateFullServiceRule,
+        updateFullServiceConfig,
         updateSettings,
         validateEventTypeRule,
         validateGuestCountRule,
         validateOrderAmountRule,
         validateFullServiceRule,
+        validateFullServiceConfig,
         findGuestCountOverlap,
         getGuestCountRuleForCount,
         findOrderAmountOverlap,

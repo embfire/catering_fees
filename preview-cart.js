@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return Number(rule.amountCents) || 0;
     };
 
-    const getRuleDescription = (rule) => {
+    const getRuleCalculation = (rule) => {
         if (!rule) return '';
         if (rule.calcType === 'percent') {
             return `${rule.percent || 0}% of subtotal (${formatCurrency(subtotalCents)})`;
@@ -55,13 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${formatDollarsSmart(rule.amountCents)} flat`;
     };
 
-    const addFeeLine = (lines, name, rule, forceShow = false) => {
+    const addFeeLine = (lines, name, description, rule, forceShow = false) => {
         if (!rule && !forceShow) return;
         const amountCents = getRuleAmountCents(rule);
         if (!amountCents && !forceShow) return;
         lines.push({
             name,
-            description: getRuleDescription(rule),
+            description,
+            calculation: getRuleCalculation(rule),
             amountCents
         });
     };
@@ -79,18 +80,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (settings.guestCountActive) {
             const rule = FeesStore.getGuestCountRuleForCount(guestCount, guestRules);
-            addFeeLine(lines, 'Guest count fee', rule);
+            addFeeLine(
+                lines,
+                'Party size fee',
+                'Scales with your party size to ensure adequate staffing and prep.',
+                rule
+            );
         }
 
         if (settings.orderAmountActive) {
             const rule = FeesStore.getOrderAmountRuleForSubtotal(subtotalCents, orderAmountRules);
-            addFeeLine(lines, 'Order amount fee', rule);
+            addFeeLine(
+                lines,
+                'Service fee',
+                'Covers the administrative and operational costs of your catering order.',
+                rule
+            );
         }
 
         if (eventTypeId) {
             const rule = eventTypeRules.find(item => item.id === eventTypeId);
             if (rule && rule.active) {
-                addFeeLine(lines, `Event type: ${rule.eventTypeName}`, rule);
+                addFeeLine(
+                    lines,
+                    `${rule.eventTypeName} coordination`,
+                    `Specialized planning and resources required for ${rule.eventTypeName} events.`,
+                    rule
+                );
             }
         }
 
@@ -102,14 +118,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const bundleRule = fullServiceConfig.bundle;
         const componentMap = fullServiceConfig.components || {};
         const componentLabels = {
-            cutlery: 'Cutlery',
-            staffing: 'Staffing',
-            setup: 'Setup',
+            cutlery: 'Plates & cutlery',
+            staffing: 'On-site staff',
+            setup: 'On-site setup',
             cleanup: 'Cleanup'
+        };
+        const componentDescriptions = {
+            cutlery: 'Provision of all necessary dining ware for your guests.',
+            staffing: 'Professional team members to assist during your event.',
+            setup: 'Professional arrangement and presentation of your catering.',
+            cleanup: 'Professional clearing of the catering area after your event.'
         };
 
         if (mode === 'bundle') {
-            addFeeLine(lines, 'Full-service fee', bundleRule, true);
+            addFeeLine(
+                lines,
+                'Full-service',
+                'Comprehensive on-site service from setup to cleanup.',
+                bundleRule,
+                true
+            );
             return lines;
         }
 
@@ -117,7 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         componentKeys.forEach(key => {
             const rule = componentMap[key];
             const label = componentLabels[key] || key;
-            addFeeLine(lines, `Full-service: ${label}`, rule, true);
+            const description = componentDescriptions[key] || '';
+            addFeeLine(lines, label, description, rule, true);
         });
 
         return lines;
@@ -145,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <div class="fees-dialog-item-title">${line.name}</div>
                         <div class="fees-dialog-item-desc">${line.description}</div>
+                        <div class="fees-dialog-item-calc">${line.calculation}</div>
                     </div>
                     <div class="fees-dialog-item-amount">${formatCurrency(line.amountCents)}</div>
                 `;

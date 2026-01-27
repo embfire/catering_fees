@@ -112,7 +112,10 @@
         </div>
 
         <!-- Page Title -->
-        <h1 class="page-title">Taxes and fees</h1>
+        <div class="page-title-row">
+            <h1 class="page-title">Taxes and fees</h1>
+            <button class="btn-secondary" id="preview-fees-button" type="button">Preview catering fees</button>
+        </div>
 
         <!-- Tabs -->
         <div class="tabs">
@@ -219,6 +222,91 @@
         </section>
 
     </main>
+
+    <div class="modal-backdrop preview-fees-modal" id="preview-fees-modal" aria-hidden="true">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Preview catering fees</h2>
+                <button class="modal-close" type="button" id="preview-fees-close" aria-label="Close">
+                    <i class="ph ph-x icon-16" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal-body" id="preview-fees-form">
+                <div class="modal-row">
+                    <label class="modal-label" for="preview-subtotal">Subtotal</label>
+                    <div class="input-wrapper">
+                        <div class="input-field">
+                            <span class="input-prefix">$</span>
+                            <input class="text-input" id="preview-subtotal" name="subtotal" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00">
+                        </div>
+                        <p class="modal-error" id="preview-subtotal-error" role="alert"></p>
+                    </div>
+                </div>
+                <div class="modal-row">
+                    <label class="modal-label" for="preview-guest-count">Guest count</label>
+                    <div class="input-wrapper">
+                        <div class="input-field">
+                            <input class="text-input" id="preview-guest-count" name="guestCount" type="number" min="0" step="1" inputmode="numeric" placeholder="0">
+                        </div>
+                        <p class="modal-error" id="preview-guest-count-error" role="alert"></p>
+                    </div>
+                </div>
+                <div class="modal-row">
+                    <label class="modal-label" for="preview-event-type">Event type</label>
+                    <div class="input-wrapper">
+                        <div class="input-field select-field">
+                            <select class="select-input" id="preview-event-type" name="eventType"></select>
+                            <div class="select-actions">
+                                <span class="select-caret" aria-hidden="true">
+                                    <i class="ph ph-caret-down icon-16"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-row">
+                    <label class="modal-checkbox-row" for="preview-full-service-toggle">
+                        <input class="modal-checkbox" id="preview-full-service-toggle" type="checkbox">
+                        I want a Full-service
+                    </label>
+                </div>
+                <div class="modal-row modal-row-compact" id="preview-full-service-choice" hidden>
+                    <span class="modal-label">Service option</span>
+                    <div class="segmented-control" id="preview-full-service-segment">
+                        <button class="segment-button segment-selected" type="button" data-value="bundle">Bundled fee</button>
+                        <button class="segment-button" type="button" data-value="a_la_carte">Individual services</button>
+                    </div>
+                    <input type="hidden" id="preview-full-service-mode" name="fullServiceMode" value="bundle">
+                </div>
+                <div class="modal-row modal-row-compact" id="preview-a-la-carte-options" hidden>
+                    <span class="modal-label">Individual services</span>
+                    <div class="modal-checkboxes">
+                        <label class="modal-checkbox-item">
+                            <input class="modal-checkbox" type="checkbox" value="cutlery">
+                            Cutlery
+                        </label>
+                        <label class="modal-checkbox-item">
+                            <input class="modal-checkbox" type="checkbox" value="staffing">
+                            Staffing
+                        </label>
+                        <label class="modal-checkbox-item">
+                            <input class="modal-checkbox" type="checkbox" value="setup">
+                            Setup
+                        </label>
+                        <label class="modal-checkbox-item">
+                            <input class="modal-checkbox" type="checkbox" value="cleanup">
+                            Cleanup
+                        </label>
+                    </div>
+                </div>
+                <p class="modal-error" id="preview-a-la-carte-error" role="alert"></p>
+                <div class="modal-actions">
+                    <button class="btn-secondary" type="button" id="preview-fees-cancel">Cancel</button>
+                    <button class="btn-primary" type="submit">Preview</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="fees-store.js"></script>
     <script src="taxes-script.js"></script>

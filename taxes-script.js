@@ -143,6 +143,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    const previewButton = document.getElementById('preview-fees-button');
+    const previewModal = document.getElementById('preview-fees-modal');
+    const previewClose = document.getElementById('preview-fees-close');
+    const previewCancel = document.getElementById('preview-fees-cancel');
+    const previewForm = document.getElementById('preview-fees-form');
+    const previewSubtotal = document.getElementById('preview-subtotal');
+    const previewSubtotalField = previewSubtotal?.closest('.input-field');
+    const previewSubtotalError = document.getElementById('preview-subtotal-error');
+    const previewGuestCount = document.getElementById('preview-guest-count');
+    const previewGuestCountField = previewGuestCount?.closest('.input-field');
+    const previewGuestCountError = document.getElementById('preview-guest-count-error');
+    const previewEventType = document.getElementById('preview-event-type');
+    const previewALaCarteError = document.getElementById('preview-a-la-carte-error');
+    const previewALaCarteOptions = document.getElementById('preview-a-la-carte-options');
+    const previewFullServiceChoice = document.getElementById('preview-full-service-choice');
+    const previewFullServiceToggle = document.getElementById('preview-full-service-toggle');
+    const previewFullServiceSegment = document.getElementById('preview-full-service-segment');
+    const previewFullServiceModeInput = document.getElementById('preview-full-service-mode');
+
     const tableBody = document.getElementById('event-type-table-body');
     const emptyState = document.getElementById('event-type-empty');
     const tableContainer = tableBody ? tableBody.closest('.table-container') : null;
@@ -150,6 +169,89 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`;
     const formatPercent = (value) => `${value}%`;
+
+    const parseCurrencyToCents = (value) => {
+        const numeric = parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
+        if (!Number.isFinite(numeric)) {
+            return null;
+        }
+        return Math.round(numeric * 100);
+    };
+
+    const clearFieldError = (errorLabel, field) => {
+        if (errorLabel) {
+            errorLabel.textContent = '';
+        }
+        if (field) {
+            field.classList.remove('input-error');
+        }
+    };
+
+    const setFieldError = (errorLabel, field, message) => {
+        if (errorLabel) {
+            errorLabel.textContent = message || '';
+        }
+        if (field && message) {
+            field.classList.add('input-error');
+        }
+    };
+
+    const clearPreviewErrors = () => {
+        clearFieldError(previewSubtotalError, previewSubtotalField);
+        clearFieldError(previewGuestCountError, previewGuestCountField);
+        clearFieldError(previewALaCarteError, null);
+    };
+
+    const openPreviewModal = () => {
+        if (!previewModal) return;
+        previewModal.classList.add('is-open');
+        previewModal.setAttribute('aria-hidden', 'false');
+        clearPreviewErrors();
+    };
+
+    const closePreviewModal = () => {
+        if (!previewModal) return;
+        previewModal.classList.remove('is-open');
+        previewModal.setAttribute('aria-hidden', 'true');
+        clearPreviewErrors();
+    };
+
+    const setFullServiceMode = (value) => {
+        if (!previewFullServiceSegment || !previewFullServiceModeInput) return;
+        const buttons = Array.from(previewFullServiceSegment.querySelectorAll('.segment-button'));
+        buttons.forEach(button => {
+            button.classList.toggle('segment-selected', button.dataset.value === value);
+        });
+        previewFullServiceModeInput.value = value;
+    };
+
+    const updateALaCarteVisibility = () => {
+        const fullServiceConfig = FeesStore.getFullServiceConfig();
+        const isALaCarteConfigured = fullServiceConfig.mode === 'a_la_carte';
+        const isEnabled = previewFullServiceToggle?.checked ?? true;
+        if (previewFullServiceChoice) {
+            previewFullServiceChoice.hidden = !(isEnabled && isALaCarteConfigured);
+        }
+        if (!previewALaCarteOptions) return;
+        const isALaCarte = previewFullServiceModeInput?.value === 'a_la_carte';
+        previewALaCarteOptions.hidden = !(isEnabled && isALaCarteConfigured && isALaCarte);
+    };
+
+    const renderEventTypeOptions = () => {
+        if (!previewEventType) return;
+        const rules = FeesStore.getEventTypeRules();
+        previewEventType.innerHTML = '';
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = 'None';
+        previewEventType.appendChild(emptyOption);
+        rules.forEach(rule => {
+            const option = document.createElement('option');
+            option.value = rule.id;
+            option.textContent = rule.active ? rule.eventTypeName : `${rule.eventTypeName} (Inactive)`;
+            previewEventType.appendChild(option);
+        });
+    };
 
     const setStatusTag = (elementId, isActive) => {
         const tag = document.getElementById(elementId);
@@ -227,6 +329,143 @@ document.addEventListener('DOMContentLoaded', function() {
             tableBody.appendChild(row);
         });
     };
+
+    if (previewButton) {
+        previewButton.addEventListener('click', () => {
+            const fullServiceConfig = FeesStore.getFullServiceConfig();
+            if (fullServiceConfig.mode !== 'a_la_carte') {
+                setFullServiceMode('bundle');
+            }
+            renderEventTypeOptions();
+            updateALaCarteVisibility();
+            openPreviewModal();
+        });
+    }
+
+    if (previewClose) {
+        previewClose.addEventListener('click', closePreviewModal);
+    }
+
+    if (previewCancel) {
+        previewCancel.addEventListener('click', closePreviewModal);
+    }
+
+    if (previewModal) {
+        previewModal.addEventListener('click', (event) => {
+            if (event.target === previewModal) {
+                closePreviewModal();
+            }
+        });
+    }
+
+    if (previewFullServiceSegment) {
+        previewFullServiceSegment.addEventListener('click', (event) => {
+            const button = event.target.closest('.segment-button');
+            if (!button) return;
+            setFullServiceMode(button.dataset.value);
+            clearFieldError(previewALaCarteError, null);
+            updateALaCarteVisibility();
+        });
+    }
+
+    if (previewForm) {
+        previewForm.addEventListener('change', (event) => {
+            if (event.target && event.target.id === 'preview-full-service-toggle') {
+                clearFieldError(previewALaCarteError, null);
+                updateALaCarteVisibility();
+            }
+        });
+    }
+
+    if (previewALaCarteOptions) {
+        previewALaCarteOptions.addEventListener('change', () => {
+            clearFieldError(previewALaCarteError, null);
+        });
+    }
+
+    if (previewSubtotal) {
+        previewSubtotal.addEventListener('input', () => {
+            clearFieldError(previewSubtotalError, previewSubtotalField);
+        });
+    }
+
+    if (previewGuestCount) {
+        previewGuestCount.addEventListener('input', () => {
+            clearFieldError(previewGuestCountError, previewGuestCountField);
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && previewModal?.classList.contains('is-open')) {
+            closePreviewModal();
+        }
+    });
+
+    if (previewForm) {
+        previewForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            clearPreviewErrors();
+
+            const subtotalCents = parseCurrencyToCents(previewSubtotal?.value);
+            if (subtotalCents === null || subtotalCents < 0) {
+                setFieldError(previewSubtotalError, previewSubtotalField, 'Enter a valid subtotal.');
+                previewSubtotal?.focus();
+                return;
+            }
+
+            const guestCountValue = Number(previewGuestCount?.value);
+            const guestCountRaw = String(previewGuestCount?.value || '').trim();
+            if (!guestCountRaw) {
+                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a guest count.');
+                previewGuestCount?.focus();
+                return;
+            }
+            if (!Number.isFinite(guestCountValue) || guestCountValue < 0) {
+                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a valid guest count.');
+                previewGuestCount?.focus();
+                return;
+            }
+
+            const fullServiceConfig = FeesStore.getFullServiceConfig();
+            const fullServiceEnabled = previewFullServiceToggle?.checked ?? true;
+            let fullServiceMode = fullServiceConfig.mode === 'a_la_carte' ? 'bundle' : 'bundle';
+            let aLaCarteComponents = [];
+
+            if (fullServiceEnabled) {
+                if (fullServiceConfig.mode === 'a_la_carte') {
+                    fullServiceMode = previewFullServiceModeInput?.value || 'bundle';
+                    if (fullServiceMode === 'a_la_carte' && previewALaCarteOptions) {
+                        aLaCarteComponents = Array.from(previewALaCarteOptions.querySelectorAll('input[type="checkbox"]:checked'))
+                            .map(input => input.value);
+                        if (!aLaCarteComponents.length) {
+                            setFieldError(previewALaCarteError, null, 'Select at least one a-la-carte item.');
+                            return;
+                        }
+                    }
+                } else {
+                    fullServiceMode = 'bundle';
+                }
+            }
+
+            const params = new URLSearchParams();
+            params.set('variant', variant);
+            params.set('subtotalCents', String(subtotalCents));
+            params.set('guestCount', String(Math.round(guestCountValue)));
+            params.set('fullServiceEnabled', fullServiceEnabled ? 'true' : 'false');
+            if (fullServiceEnabled) {
+                params.set('fullServiceMode', fullServiceMode);
+            }
+            if (previewEventType?.value) {
+                params.set('eventTypeId', previewEventType.value);
+            }
+            if (aLaCarteComponents.length) {
+                params.set('aLaCarteComponents', aLaCarteComponents.join(','));
+            }
+            const previewUrl = `preview-cart.html?${params.toString()}`;
+            window.open(previewUrl, '_blank', 'noopener');
+            closePreviewModal();
+        });
+    }
 
     addFeeButton.addEventListener('click', () => {
         window.location.href = withVariant('event-type-fee.html');

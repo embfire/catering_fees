@@ -2,6 +2,7 @@
 :root {
     /* Colors */
     --primary-100: #ff5719;
+    --primary-05: #fff7f3;
     --primary-07: rgba(255, 87, 25, 0.07);
     
     --grayscale-100: #141414;
@@ -22,6 +23,7 @@
     
     /* Typography */
     --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --Font-Family-All-Text: var(--font-family);
     
     /* Shadows */
     --shadow-short: 0px 1px 1px 0px rgba(0, 0, 0, 0.15);
@@ -303,6 +305,18 @@ body {
     line-height: 28px;
     letter-spacing: -0.5px;
     margin-bottom: 24px;
+}
+
+.page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.page-title-row .page-title {
+    margin-bottom: 0;
 }
 
 /* Tabs */
@@ -725,16 +739,37 @@ body {
     gap: 16px;
 }
 
+.preview-fees-modal .modal {
+    background-color: var(--grayscale-05);
+    border-radius: 8px;
+    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.05), 0px 5px 20px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    gap: 0;
+}
+
 .modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
+.preview-fees-modal .modal-header {
+    background-color: var(--grayscale-white);
+    padding: 13px 18px 13px 24px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
 .modal-title {
     font-size: 18px;
     font-weight: 700;
     color: var(--grayscale-100);
+}
+
+.preview-fees-modal .modal-title {
+    font-size: 17px;
+    line-height: 22px;
+    letter-spacing: -0.408px;
 }
 
 .modal-close {
@@ -759,10 +794,23 @@ body {
     gap: 12px;
 }
 
+.preview-fees-modal .modal-body {
+    padding: 24px;
+    gap: 16px;
+}
+
 .modal-row {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.preview-fees-modal .modal-row {
+    gap: 4px;
+}
+
+.modal [hidden] {
+    display: none;
 }
 
 .modal-row-inline {
@@ -775,6 +823,13 @@ body {
     font-size: 13px;
     font-weight: 600;
     color: var(--grayscale-80);
+}
+
+.preview-fees-modal .modal-label {
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-100);
 }
 
 .modal-input,
@@ -822,9 +877,12 @@ body {
 }
 
 .modal-error {
-    min-height: 18px;
     font-size: 12px;
-    color: #b3261e;
+    color: #ff3b30;
+}
+
+.modal-error:empty {
+    display: none;
 }
 
 .modal-actions {
@@ -833,6 +891,213 @@ body {
     gap: 8px;
     margin-top: 4px;
 }
+
+.preview-fees-modal .modal-actions {
+    padding: 0;
+    margin-top: 0;
+}
+
+.preview-fees-modal .input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+}
+
+.preview-fees-modal .input-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 6px 12px;
+    background-color: var(--grayscale-white);
+    border-radius: 4px;
+    border: 1px solid var(--grayscale-20);
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.preview-fees-modal .input-field:focus-within {
+    box-shadow: 0 0 0 1.5px rgba(255, 87, 25, 0.6);
+    border-color: transparent;
+}
+
+.preview-fees-modal .input-field.input-error {
+    box-shadow: 0 0 0 1.5px #ff3b30;
+    border-color: transparent;
+}
+
+.preview-fees-modal .input-field.input-error:focus-within {
+    box-shadow: 0 0 0 1.5px #ff3b30;
+}
+
+.preview-fees-modal .input-prefix {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-100);
+}
+
+.preview-fees-modal .text-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-100);
+    background: transparent;
+    font-family: var(--font-family);
+}
+
+.preview-fees-modal .text-input::placeholder {
+    color: var(--grayscale-40);
+}
+
+.preview-fees-modal .select-field {
+    position: relative;
+    border: 1px solid var(--grayscale-20);
+    box-shadow: var(--shadow-button);
+    cursor: pointer;
+}
+
+.preview-fees-modal .select-field:focus-within {
+    box-shadow: 0 0 0 1.5px rgba(255, 87, 25, 0.6);
+    border-color: transparent;
+}
+
+.preview-fees-modal .select-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    color: var(--grayscale-100);
+    background: transparent;
+    font-family: var(--font-family);
+    appearance: none;
+}
+
+.preview-fees-modal .select-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--grayscale-60);
+}
+
+.preview-fees-modal .segmented-control {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.preview-fees-modal .segment-button {
+    min-width: 48px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: var(--grayscale-white);
+    color: var(--grayscale-100);
+    border: 1px solid var(--grayscale-20);
+}
+
+.preview-fees-modal .segment-button:hover {
+    border-color: var(--grayscale-50);
+}
+
+.preview-fees-modal .segment-button.segment-selected {
+    background-color: var(--primary-05);
+    color: var(--primary-100);
+    border: 1px solid var(--primary-100);
+}
+
+.preview-fees-modal .segment-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1.5px rgba(255, 87, 25, 0.6);
+}
+
+.preview-fees-modal .modal-checkbox:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1.5px rgba(255, 87, 25, 0.6);
+}
+
+.preview-fees-modal .modal-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--grayscale-20);
+    border-radius: 2px;
+    appearance: none;
+    background-color: var(--grayscale-white);
+    display: inline-grid;
+    place-content: center;
+    cursor: pointer;
+}
+
+.preview-fees-modal .modal-checkbox:checked {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml;utf8,<svg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'><rect width='16' height='16' rx='2' fill='%23FF5719'/><path fill-rule='evenodd' clip-rule='evenodd' d='M12.4771 3.23678C12.8986 3.50021 13.0268 4.05547 12.7633 4.47697L7.76331 12.477C7.61151 12.7199 7.35317 12.876 7.06756 12.8974C6.78195 12.9189 6.50318 12.8031 6.31678 12.5857L3.31678 9.08569C2.9933 8.70829 3.03701 8.14012 3.4144 7.81664C3.79179 7.49316 4.35996 7.53687 4.68344 7.91426L6.88619 10.4841L11.2369 3.52297C11.5004 3.10147 12.0556 2.97334 12.4771 3.23678Z' fill='white'/></svg>");
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.preview-fees-modal .modal-checkboxes {
+    padding-left: 0;
+}
+
+.preview-fees-modal .modal-checkbox-item {
+    padding: 5px 0;
+}
+
+.modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--grayscale-80);
+}
+
+.modal-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-row-compact {
+    gap: 8px;
+}
+
+.modal-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--grayscale-80);
+}
+
+.modal-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--grayscale-80);
+}
+
 
 .fees-table thead th:nth-child(1) {
     width: 33%;

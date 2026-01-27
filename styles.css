@@ -17,6 +17,7 @@
     
     /* Typography */
     --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --Font-Family-All-Text: var(--font-family);
     
     /* Shadows */
     --shadow-short: 0px 1px 1px 0px rgba(0, 0, 0, 0.15);

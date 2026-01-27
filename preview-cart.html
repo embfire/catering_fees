@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview cart</title>
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="preview-cart.css">
+</head>
+<body class="preview-cart">
+    <main class="cart-panel">
+        <header class="cart-header">
+            <div class="header-spacer"></div>
+            <h1 class="cart-title">Cart</h1>
+            <button class="icon-button" type="button" aria-label="Close">
+                <i class="ph ph-x icon-20" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <section class="cart-card">
+            <div class="cart-row">
+                <div class="cart-row-text inline">
+                    <span class="row-title">Catering pickup</span>
+                    <span class="row-dot">•</span>
+                    <span class="row-subtitle">Ocean Drive Miami</span>
+                </div>
+                <i class="ph ph-caret-right icon-20 muted" aria-hidden="true"></i>
+            </div>
+            <div class="cart-row">
+                <div class="cart-row-text inline">
+                    <span class="row-title">ASAP</span>
+                    <span class="row-dot">•</span>
+                    <span class="row-subtitle">In around 20 min</span>
+                </div>
+                <i class="ph ph-caret-right icon-20 muted" aria-hidden="true"></i>
+            </div>
+        </section>
+
+        <section class="cart-card cart-row-large">
+            <div class="cart-row-text">Party size</div>
+            <div class="stepper stepper-party">
+                <button class="stepper-icon" type="button" aria-label="Decrease party size">
+                    <i class="ph ph-minus icon-16" aria-hidden="true"></i>
+                </button>
+                <span class="stepper-value" id="party-size-value">60</span>
+                <button class="stepper-icon" type="button" aria-label="Increase party size">
+                    <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="cart-items">
+            <div class="cart-item">
+                <div class="cart-item-header">
+                    <div class="cart-item-name">Lápana Bowl</div>
+                    <div class="cart-item-price">120.00</div>
+                </div>
+                <div class="cart-item-description">Small ($6.50) • Tuna ($1.00) • Chopped Romaine • FW Orange • Small ($1.50) 2 x Cheese ($0.50)</div>
+                <div class="cart-item-footer">
+                    <div class="stepper stepper-compact">
+                        <button class="stepper-icon" type="button" aria-label="Decrease quantity">
+                            <i class="ph ph-minus icon-16" aria-hidden="true"></i>
+                        </button>
+                        <span class="stepper-value">10</span>
+                        <button class="stepper-icon" type="button" aria-label="Increase quantity">
+                            <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <i class="ph ph-heart-fill icon-20 accent" aria-hidden="true"></i>
+                </div>
+            </div>
+
+            <div class="cart-item">
+                <div class="cart-item-header">
+                    <div class="cart-item-name">Weekend Warrior</div>
+                    <div class="cart-item-price">82.00</div>
+                </div>
+                <div class="cart-item-footer">
+                    <div class="stepper stepper-compact">
+                        <button class="stepper-icon" type="button" aria-label="Decrease quantity">
+                            <i class="ph ph-minus icon-16" aria-hidden="true"></i>
+                        </button>
+                        <span class="stepper-value">10</span>
+                        <button class="stepper-icon" type="button" aria-label="Increase quantity">
+                            <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cart-actions cart-card">
+            <button class="ghost-button" type="button">
+                <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                Add items
+            </button>
+            <button class="ghost-button" type="button">
+                <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                Add rewards or offer
+            </button>
+        </section>
+
+        <section class="cart-summary">
+            <div class="summary-row summary-row-points">
+                <span>Points you’ll earn</span>
+                <span class="summary-points">
+                    <i class="ph ph-coin-vertical icon-20" aria-hidden="true"></i>
+                    13
+                </span>
+            </div>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span id="subtotal-value">$0.00</span>
+            </div>
+            <div class="summary-row summary-row-inline">
+                <div class="summary-label">
+                    <span>Catering fees</span>
+                    <button class="info-button" type="button" id="catering-fees-info" aria-label="View catering fees breakdown">
+                        <i class="ph ph-info" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <span id="catering-fees-value">$0.00</span>
+            </div>
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span class="summary-total-values">
+                    <span id="total-value">$0.00</span>
+                    <span class="summary-per-person" id="per-person-value">$0.00/person</span>
+                </span>
+            </div>
+        </section>
+
+        <button class="checkout-button" type="button">
+            <div>
+                <div class="checkout-total" id="checkout-total">$0.00</div>
+                <div class="checkout-per-person" id="checkout-per-person">$0.00/person</div>
+            </div>
+            <span>Checkout</span>
+        </button>
+    </main>
+
+    <div class="fees-dialog-backdrop" id="catering-fees-dialog" aria-hidden="true">
+        <div class="fees-dialog">
+            <div class="fees-dialog-header">
+                <h2 class="fees-dialog-title">Catering fees</h2>
+                <button class="icon-button" type="button" id="catering-fees-close" aria-label="Close">
+                    <i class="ph ph-x icon-24" aria-hidden="true"></i>
+                </button>
+            </div>
+            <div class="fees-dialog-body">
+                <div class="fees-dialog-list" id="fee-breakdown-list"></div>
+                <div class="fees-dialog-total">
+                    <span>Total fees</span>
+                    <span id="fee-total-value">$0.00</span>
+                </div>
+            </div>
+            <div class="fees-dialog-actions">
+                <button class="fees-dialog-action" type="button" id="catering-fees-ack">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="fees-store.js"></script>
+    <script src="preview-cart.js"></script>
+</body>
+</html>

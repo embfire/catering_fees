@@ -1105,6 +1105,10 @@ html[data-fees-variant="B"] .rules-add-button {
     pointer-events: none;
 }
 
+.table-empty[hidden] {
+    display: none;
+}
+
 .table-container.is-empty {
     min-height: 140px;
 }

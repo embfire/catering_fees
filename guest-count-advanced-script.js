@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const unsavedCancel = document.getElementById('guest-count-cancel');
     const unsavedSave = document.getElementById('guest-count-save');
     const tableBody = document.getElementById('guest-range-body');
+    const tableContainer = document.querySelector('.table-section[data-variant="A"] .table-container');
+    const emptyState = document.getElementById('guest-count-empty');
     const activationDialog = document.getElementById('guest-activation-dialog');
     const activationOk = document.getElementById('guest-activation-ok');
     const activationBody = document.getElementById('guest-activation-body');
@@ -536,6 +538,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    const updateEmptyState = () => {
+        const isEmpty = tableBody.querySelectorAll('.range-row').length === 0;
+        if (emptyState) {
+            emptyState.hidden = !isEmpty;
+        }
+        if (tableContainer) {
+            tableContainer.classList.toggle('is-empty', isEmpty);
+        }
+    };
+
     const getDefaultCalcType = (rule) => rule.calcType || savedSettings.guestCountCalcType || 'flat';
 
     const getRowCalcType = (row) => {
@@ -664,11 +676,13 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.innerHTML = '';
         const ranges = clone(draftRules).sort((a, b) => Number(a.minGuests) - Number(b.minGuests));
         if (!ranges.length) {
+            updateEmptyState();
             return;
         }
         ranges.forEach(rule => {
             tableBody.appendChild(buildRow(rule));
         });
+        updateEmptyState();
     };
 
     const getRulesFromTable = () => {
@@ -836,6 +850,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tableBody.appendChild(firstRow);
             updateAllAmountAffixes();
             setDirty(true);
+            updateEmptyState();
             return;
         }
         const lastRow = rows[rows.length - 1];
@@ -871,6 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.appendChild(buildRow(newRule));
         updateAllAmountAffixes();
         setDirty(true);
+        updateEmptyState();
     });
 
     tableBody.addEventListener('input', (event) => {
@@ -908,6 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!button || button.dataset.action !== 'delete') return;
         button.closest('.range-row').remove();
         setDirty(computeDirty());
+        updateEmptyState();
     });
 
     if (toggleButton) {
@@ -978,4 +995,5 @@ document.addEventListener('DOMContentLoaded', function() {
     updateToggleLabel(!!savedSettings.guestCountActive);
     renderTable();
     updateAllAmountAffixes();
+    updateEmptyState();
 });

@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const unsavedCancel = document.getElementById('order-amount-cancel');
     const unsavedSave = document.getElementById('order-amount-save');
     const tableBody = document.getElementById('order-amount-body');
+    const tableContainer = document.querySelector('.table-section[data-variant="A"] .table-container');
+    const emptyState = document.getElementById('order-amount-empty');
     const activationDialog = document.getElementById('order-amount-activation-dialog');
     const activationOk = document.getElementById('order-amount-activation-ok');
     const activationBody = document.getElementById('order-amount-activation-body');
@@ -534,6 +536,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    const updateEmptyState = () => {
+        const isEmpty = tableBody.querySelectorAll('.range-row').length === 0;
+        if (emptyState) {
+            emptyState.hidden = !isEmpty;
+        }
+        if (tableContainer) {
+            tableContainer.classList.toggle('is-empty', isEmpty);
+        }
+    };
+
     const getDefaultCalcType = (rule) => rule.calcType || savedSettings.orderAmountCalcType || 'flat';
 
     const getRowCalcType = (row) => {
@@ -665,11 +677,13 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.innerHTML = '';
         const ranges = clone(draftRules).sort((a, b) => Number(a.minSubtotalCents) - Number(b.minSubtotalCents));
         if (!ranges.length) {
+            updateEmptyState();
             return;
         }
         ranges.forEach(rule => {
             tableBody.appendChild(buildRow(rule));
         });
+        updateEmptyState();
     };
 
     const getRulesFromTable = () => {
@@ -827,6 +841,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tableBody.appendChild(firstRow);
             updateAllAmountAffixes();
             setDirty(true);
+            updateEmptyState();
             return;
         }
         const lastRow = rows[rows.length - 1];
@@ -864,6 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.appendChild(buildRow(newRule));
         updateAllAmountAffixes();
         setDirty(true);
+        updateEmptyState();
     });
 
     tableBody.addEventListener('input', (event) => {
@@ -908,6 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!button || button.dataset.action !== 'delete') return;
         button.closest('.range-row').remove();
         setDirty(computeDirty());
+        updateEmptyState();
     });
 
     if (toggleButton) {
@@ -978,4 +995,5 @@ document.addEventListener('DOMContentLoaded', function() {
     updateToggleLabel(!!savedSettings.orderAmountActive);
     renderTable();
     updateAllAmountAffixes();
+    updateEmptyState();
 });

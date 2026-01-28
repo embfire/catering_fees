@@ -709,6 +709,7 @@ body {
 
 .fees-table tbody tr:hover {
     background-color: var(--grayscale-transparent-3);
+    cursor: pointer;
 }
 
 .cell-status {

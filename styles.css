@@ -253,7 +253,7 @@ body.has-unsaved-bar .header {
     line-height: 22px;
     letter-spacing: -0.154px;
     color: var(--grayscale-80);
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .divider {

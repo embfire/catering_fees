@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order amount fee</title>
+    <title>Subtotal-based fee</title>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
     <script src="fees-store.js" defer></script>
@@ -17,7 +17,7 @@
                 <button class="close-button" aria-label="Close">
                     <i class="ph ph-x icon-24" aria-hidden="true"></i>
                 </button>
-                <h1 class="header-title">Order amount fee</h1>
+                <h1 class="header-title">Subtotal-based fee</h1>
             </div>
             <div class="header-right">
                 <button class="btn-activate" id="order-amount-toggle">Activate</button>
@@ -35,8 +35,8 @@
         <main class="main-content">
             <!-- Page Header -->
             <section class="page-header">
-                <h1 class="page-title">Order amount fee</h1>
-                <p class="page-description">Scale fees based on the order subtotal</p>
+                <h1 class="page-title">Subtotal-based fee</h1>
+                <p class="page-description">Automatically adjust fees based on the order subtotal</p>
                 <div class="divider"></div>
             </section>
 
@@ -147,8 +147,8 @@
     <div class="modal-backdrop" id="order-amount-deactivate-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
-                <p class="dialog-title">Deactivate order amount fee?</p>
-                <p class="dialog-body">This will stop applying order amount fees to new orders. Your ranges will be saved.</p>
+                <p class="dialog-title">Deactivate subtotal-based fee?</p>
+                <p class="dialog-body">This will stop applying subtotal-based fees to new orders. Your ranges will be saved.</p>
             </div>
             <div class="dialog-actions">
                 <button class="btn-secondary" type="button" id="order-amount-deactivate-cancel">Cancel</button>

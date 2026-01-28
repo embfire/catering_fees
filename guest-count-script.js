@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (minInput.value === '') {
             minInput.classList.add('input-error');
-            if (minError) minError.textContent = 'From cannot be empty.';
+            if (minError) minError.textContent = 'Add a From value';
             return;
         }
 

@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return '';
         }
         if (!Number.isFinite(rule.amountCents) || rule.amountCents < 0) {
-            return 'Amount must be 0 or greater.';
+        return 'Add fee amount';
         }
         return '';
     };

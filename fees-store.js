@@ -245,7 +245,7 @@
     const validateEventTypeRule = (rule, store) => {
         const name = normalizeName(rule.eventTypeName || '');
         if (!name) {
-            return { valid: false, message: 'Event type name is required.' };
+            return { valid: false, message: 'Select event type' };
         }
         const duplicate = store.eventTypeRules.find((existing) => {
             if (rule.id && existing.id === rule.id) {
@@ -261,7 +261,7 @@
                 return { valid: false, message: 'Percent must be between 0 and 100.' };
             }
         } else if (!isCentsValid(rule.amountCents)) {
-            return { valid: false, message: 'Amount must be 0 or greater.' };
+            return { valid: false, message: 'Add fee amount' };
         }
         return { valid: true, message: '' };
     };
@@ -281,7 +281,7 @@
                 return { valid: false, message: 'Percent must be between 0 and 100.' };
             }
         } else if (!isCentsValid(rule.amountCents)) {
-            return { valid: false, message: 'Amount must be 0 or greater.' };
+            return { valid: false, message: 'Add fee amount' };
         }
 
         const overlap = findGuestCountOverlap(rule, store.guestCountRules);
@@ -320,7 +320,7 @@
                 return { valid: false, message: 'Percent must be between 0 and 100.' };
             }
         } else if (!isCentsValid(rule.amountCents)) {
-            return { valid: false, message: 'Amount must be 0 or greater.' };
+            return { valid: false, message: 'Add fee amount' };
         }
 
         const overlap = findOrderAmountOverlap(rule, store.orderAmountRules);
@@ -350,7 +350,7 @@
                 return { valid: false, message: 'Percent must be between 0 and 100.' };
             }
         } else if (!isCentsValid(rule.amountCents)) {
-            return { valid: false, message: 'Amount must be 0 or greater.' };
+            return { valid: false, message: 'Add fee amount' };
         }
         return { valid: true, message: '' };
     };

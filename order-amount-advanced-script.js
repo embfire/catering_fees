@@ -704,7 +704,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    const validateRules = () => {
+    const validateRules = (options = {}) => {
+        const { showOpenEndedDialog = true, requireOpenEnded = true } = options;
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         const rules = getRulesFromTable();
         rows.forEach(clearRowErrors);
@@ -722,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const rule = rules[index];
             const data = parsed[index];
             if (row.querySelector('[data-field="min"]').value === '') {
-                setRowError(row, '[data-error="min"]', 'From cannot be empty.');
+                setRowError(row, '[data-error="min"]', 'Add a From value');
                 row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
                 valid = false;
                 return;
@@ -744,7 +745,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     valid = false;
                 }
             } else if (!Number.isFinite(data.amountCents) || data.amountCents < 0) {
-                setRowError(row, '[data-error="amount"]', 'Amount must be 0 or greater.');
+                setRowError(row, '[data-error="amount"]', 'Add fee amount');
                 row.querySelector('[data-field="amount"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
@@ -777,17 +778,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 continue;
             }
             const next = ordered[i + 1];
-            if (next && next.min !== current.max + 1) {
-                setRowError(row, '[data-error="max"]', 'Subtotal ranges must be continuous with no gaps.');
-                row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
-                return { valid: false };
+            if (next) {
+                if (next.min <= current.max) {
+                    const nextRow = rows[next.index];
+                    setRowError(nextRow, '[data-error="min"]', 'Subtotal ranges must be continuous with no gaps or overlaps.');
+                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
+                    return { valid: false };
+                }
+                if (next.min !== current.max + 1) {
+                    const nextRow = rows[next.index];
+                    setRowError(nextRow, '[data-error="min"]', 'Subtotal ranges must be continuous with no gaps or overlaps.');
+                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
+                    return { valid: false };
+                }
             }
         }
 
-        const last = ordered[ordered.length - 1];
-        if (last && last.max !== null) {
-            openOpenEndedDialog();
-            return { valid: false };
+        if (requireOpenEnded) {
+            const last = ordered[ordered.length - 1];
+            if (last && last.max !== null) {
+                if (showOpenEndedDialog) {
+                    openOpenEndedDialog();
+                }
+                return { valid: false };
+            }
         }
 
         return { valid: true };
@@ -851,13 +865,16 @@ document.addEventListener('DOMContentLoaded', function() {
         clearRowErrors(lastRow);
 
         if (!lastMinInput.value) {
-            setRowError(lastRow, '[data-error="min"]', 'From cannot be empty.');
+            setRowError(lastRow, '[data-error="min"]', 'Add a From value');
             lastMinInput.closest('.input-field').classList.add('input-error');
             return;
         }
         if (!lastAmountInput.value) {
-            setRowError(lastRow, '[data-error="amount"]', 'Fee amount cannot be empty.');
+            setRowError(lastRow, '[data-error="amount"]', 'Add fee amount');
             lastAmountInput.closest('.input-field').classList.add('input-error');
+            return;
+        }
+        if (!validateRules({ showOpenEndedDialog: false, requireOpenEnded: false }).valid) {
             return;
         }
         const lastMinCents = parseCurrencyToCents(lastMinInput.value);
@@ -873,8 +890,8 @@ document.addEventListener('DOMContentLoaded', function() {
             minSubtotalCents: newFromCents,
             maxSubtotalCents: null,
             calcType: getRowCalcType(lastRow) || 'flat',
-            amountCents: 0,
-            percent: 0
+            amountCents: null,
+            percent: null
         };
         tableBody.appendChild(buildRow(newRule));
         updateAllAmountAffixes();

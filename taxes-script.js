@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const valueText = rule.calcType === 'percent'
                 ? formatPercent(rule.percent || 0)
                 : formatCurrencyShort(rule.amountCents || 0);
-            return `${valueText} (${range})`;
+            return `(${range}) ${valueText}`;
         });
         return parts.join(', ');
     };

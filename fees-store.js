@@ -363,17 +363,18 @@
 
         const components = config.components || {};
         const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
-        for (const key of componentKeys) {
+        const activeKeys = componentKeys.filter(key => components[key]?.active);
+        if (!activeKeys.length) {
+            return { valid: false, message: 'Configure at least one service.' };
+        }
+
+        for (const key of activeKeys) {
             const validation = validateFullServiceRule(components[key] || createDefaultRule());
             if (!validation.valid) {
                 return validation;
             }
         }
 
-        const activeCount = componentKeys.filter(key => components[key]?.active).length;
-        if (activeCount > 0 && activeCount < componentKeys.length) {
-            return { valid: false, message: 'All components must be active in a-la-carte mode.' };
-        }
         return { valid: true, message: '' };
     };
 

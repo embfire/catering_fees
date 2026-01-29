@@ -129,6 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
             setup: 'Professional arrangement and presentation of your catering.',
             cleanup: 'Professional clearing of the catering area after your event.'
         };
+        const isRuleConfigured = (rule) => {
+            if (!rule) return false;
+            if (rule.calcType === 'percent') {
+                return Number.isFinite(rule.percent);
+            }
+            return Number.isFinite(rule.amountCents);
+        };
 
         if (mode === 'bundle') {
             addFeeLine(
@@ -144,6 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const componentKeys = aLaCarteComponents;
         componentKeys.forEach(key => {
             const rule = componentMap[key];
+            if (!rule?.active || !isRuleConfigured(rule)) {
+                return;
+            }
             const label = componentLabels[key] || key;
             const description = componentDescriptions[key] || '';
             addFeeLine(lines, label, description, rule, true);

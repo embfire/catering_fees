@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewFullServiceToggle = document.getElementById('preview-full-service-toggle');
     const previewFullServiceSegment = document.getElementById('preview-full-service-segment');
     const previewFullServiceModeInput = document.getElementById('preview-full-service-mode');
+    const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
 
     const tableBody = document.getElementById('event-type-table-body');
     const emptyState = document.getElementById('event-type-empty');
@@ -169,6 +170,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`;
     const formatPercent = (value) => `${value}%`;
+    const formatCurrencyShort = (cents) => {
+        const value = cents / 100;
+        const rounded = Math.round(value * 100) / 100;
+        const hasCents = Math.abs(rounded % 1) > 0;
+        return `$${rounded.toLocaleString('en-US', {
+            minimumFractionDigits: hasCents ? 2 : 0,
+            maximumFractionDigits: hasCents ? 2 : 0
+        })}`;
+    };
+    const formatRange = (minValue, maxValue, formatter) => {
+        const minLabel = formatter(minValue);
+        if (maxValue === null || maxValue === undefined) {
+            return `${minLabel}+`;
+        }
+        return `${minLabel}-${formatter(maxValue)}`;
+    };
 
     const parseCurrencyToCents = (value) => {
         const numeric = parseFloat(String(value || '').replace(/[^0-9.]/g, ''));
@@ -176,6 +193,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return null;
         }
         return Math.round(numeric * 100);
+    };
+
+    const isRuleConfigured = (rule) => {
+        if (!rule) return false;
+        if (rule.calcType === 'percent') {
+            return Number.isFinite(rule.percent);
+        }
+        return Number.isFinite(rule.amountCents);
+    };
+
+    const getConfiguredALaCarteComponents = (config) => {
+        return componentKeys.filter(key => {
+            const rule = config.components?.[key];
+            return rule?.active && isRuleConfigured(rule);
+        });
     };
 
     const clearFieldError = (errorLabel, field) => {
@@ -234,7 +266,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (!previewALaCarteOptions) return;
         const isALaCarte = previewFullServiceModeInput?.value === 'a_la_carte';
-        previewALaCarteOptions.hidden = !(isEnabled && isALaCarteConfigured && isALaCarte);
+        const configuredKeys = getConfiguredALaCarteComponents(fullServiceConfig);
+        componentKeys.forEach(key => {
+            const checkbox = previewALaCarteOptions.querySelector(`input[value="${key}"]`);
+            if (!checkbox) return;
+            const label = checkbox.closest('label');
+            const isConfigured = configuredKeys.includes(key);
+            if (label) {
+                label.hidden = !isConfigured;
+            }
+            if (!isConfigured) {
+                checkbox.checked = false;
+            }
+        });
+        previewALaCarteOptions.hidden = !(isEnabled && isALaCarteConfigured && isALaCarte && configuredKeys.length);
     };
 
     const renderEventTypeOptions = () => {
@@ -277,8 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullServiceConfig = FeesStore.getFullServiceConfig();
         const hasOrderAmountActive = !!settings.orderAmountActive;
         const hasFullServiceActive = fullServiceConfig.mode === 'a_la_carte'
-            ? ['cutlery', 'staffing', 'setup', 'cleanup']
-                .every(key => fullServiceConfig.components?.[key]?.active)
+            ? getConfiguredALaCarteComponents(fullServiceConfig).length > 0
             : !!fullServiceConfig.bundle?.active;
         setStatusTag('guest-count-status', hasGuestActive);
         setStatusTag('full-service-status', hasFullServiceActive);
@@ -286,6 +330,122 @@ document.addEventListener('DOMContentLoaded', function() {
         setActionLabel('guest-count-action', hasGuestActive);
         setActionLabel('full-service-action', hasFullServiceActive);
         setActionLabel('order-amount-action', hasOrderAmountActive);
+        updateCardSummaries(hasGuestActive, hasOrderAmountActive, hasFullServiceActive);
+    };
+
+    const setCardSummary = (elementId, summary) => {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        const row = element.closest('.card-summary-row');
+        const card = element.closest('.card');
+        if (!summary) {
+            element.textContent = '';
+            if (row) {
+                row.hidden = true;
+            }
+            if (card) {
+                card.classList.remove('has-summary');
+            }
+            return;
+        }
+        element.textContent = summary;
+        if (row) {
+            row.hidden = false;
+        }
+        if (card) {
+            card.classList.add('has-summary');
+        }
+    };
+
+    const getGuestCountSummary = () => {
+        const guestRules = FeesStore.getGuestCountRules();
+        if (!guestRules.length) return '';
+        const sorted = [...guestRules].sort((a, b) => Number(a.minGuests) - Number(b.minGuests));
+        const parts = sorted.map(rule => {
+            const range = formatRange(rule.minGuests, rule.maxGuests, (value) => String(value));
+            let valueText = '';
+            if (rule.calcType === 'percent') {
+                valueText = formatPercent(rule.percent || 0);
+            } else if (rule.calcType === 'perPerson') {
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)}/person`;
+            } else {
+                valueText = formatCurrencyShort(rule.amountCents || 0);
+            }
+            return `(${range}) ${valueText}`;
+        });
+        return parts.join(', ');
+    };
+
+    const getOrderAmountSummary = () => {
+        const rules = FeesStore.getOrderAmountRules();
+        if (!rules.length) return '';
+        const sorted = [...rules].sort((a, b) => Number(a.minSubtotalCents) - Number(b.minSubtotalCents));
+        const parts = sorted.map(rule => {
+            const range = formatRange(
+                rule.minSubtotalCents,
+                rule.maxSubtotalCents,
+                (value) => formatCurrencyShort(value)
+            );
+            const valueText = rule.calcType === 'percent'
+                ? formatPercent(rule.percent || 0)
+                : formatCurrencyShort(rule.amountCents || 0);
+            return `${valueText} (${range})`;
+        });
+        return parts.join(', ');
+    };
+
+    const getFullServiceSummary = () => {
+        const config = FeesStore.getFullServiceConfig();
+        if (config.mode !== 'a_la_carte') {
+            if (!config.bundle || !isRuleConfigured(config.bundle)) {
+                return '';
+            }
+            const valueText = config.bundle.calcType === 'percent'
+                ? formatPercent(config.bundle.percent || 0)
+                : config.bundle.calcType === 'perPerson'
+                    ? `${formatCurrencyShort(config.bundle.amountCents || 0)}/person`
+                    : formatCurrencyShort(config.bundle.amountCents || 0);
+            return `Bundled ${valueText}`;
+        }
+
+        const labels = {
+            cutlery: 'Cutlery',
+            staffing: 'Staffing',
+            setup: 'Setup',
+            cleanup: 'Cleanup'
+        };
+        const configuredKeys = getConfiguredALaCarteComponents(config);
+        if (!configuredKeys.length) return '';
+        const parts = configuredKeys.map(key => {
+            const rule = config.components?.[key];
+            if (!rule) return null;
+            let valueText = '';
+            if (rule.calcType === 'percent') {
+                valueText = formatPercent(rule.percent || 0);
+            } else if (rule.calcType === 'perPerson') {
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)}/person`;
+            } else {
+                valueText = formatCurrencyShort(rule.amountCents || 0);
+            }
+            return `${labels[key] || key} ${valueText}`;
+        }).filter(Boolean);
+        return parts.join(', ');
+    };
+
+    const updateCardSummaries = (guestActive, orderAmountActive, fullServiceActive) => {
+        const settings = FeesStore.getSettings();
+        const fullServiceConfig = FeesStore.getFullServiceConfig();
+        const resolvedGuestActive = typeof guestActive === 'boolean' ? guestActive : !!settings.guestCountActive;
+        const resolvedOrderAmountActive = typeof orderAmountActive === 'boolean' ? orderAmountActive : !!settings.orderAmountActive;
+        const resolvedFullServiceActive = typeof fullServiceActive === 'boolean'
+            ? fullServiceActive
+            : (fullServiceConfig.mode === 'a_la_carte'
+                ? getConfiguredALaCarteComponents(fullServiceConfig).length > 0
+                : !!fullServiceConfig.bundle?.active);
+
+        setCardSummary('guest-count-summary', resolvedGuestActive ? getGuestCountSummary() : '');
+        setCardSummary('order-amount-summary', resolvedOrderAmountActive ? getOrderAmountSummary() : '');
+        setCardSummary('full-service-summary', resolvedFullServiceActive ? getFullServiceSummary() : '');
     };
 
     const renderTable = () => {
@@ -435,8 +595,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (fullServiceConfig.mode === 'a_la_carte') {
                     fullServiceMode = previewFullServiceModeInput?.value || 'bundle';
                     if (fullServiceMode === 'a_la_carte' && previewALaCarteOptions) {
+                        const configuredKeys = getConfiguredALaCarteComponents(fullServiceConfig);
                         aLaCarteComponents = Array.from(previewALaCarteOptions.querySelectorAll('input[type="checkbox"]:checked'))
-                            .map(input => input.value);
+                            .map(input => input.value)
+                            .filter(key => configuredKeys.includes(key));
                         if (!aLaCarteComponents.length) {
                             setFieldError(previewALaCarteError, null, 'Select at least one a-la-carte item.');
                             return;

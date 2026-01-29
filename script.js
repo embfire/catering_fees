@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const bundleError = bundleSection?.querySelector('#bundle-fee-error');
 
     const componentRows = Array.from(document.querySelectorAll('.a-la-carte-row'));
+    const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
     const componentRefs = componentRows.reduce((acc, row) => {
         const key = row.dataset.component;
         acc[key] = {
@@ -216,6 +217,14 @@ document.addEventListener('DOMContentLoaded', function() {
         return '';
     };
 
+    const isRuleConfigured = (rule) => {
+        if (!rule) return false;
+        if (rule.calcType === 'percent') {
+            return Number.isFinite(rule.percent);
+        }
+        return Number.isFinite(rule.amountCents);
+    };
+
     const normalizeRuleFromForm = (calcButtons, amountInput, existingRule) => {
         const calcType = getSelectedCalcType(calcButtons);
         const amountValue = calcType === 'percent'
@@ -259,8 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const getActiveState = (config) => {
         if (config.mode === 'a_la_carte') {
-            return ['cutlery', 'staffing', 'setup', 'cleanup']
-                .every(key => config.components?.[key]?.active);
+            return componentKeys.some(key => config.components?.[key]?.active);
         }
         return !!config.bundle?.active;
     };
@@ -380,21 +388,29 @@ document.addEventListener('DOMContentLoaded', function() {
             return isValid;
         }
 
-        const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
+        let configuredCount = 0;
         componentKeys.forEach(key => {
             const ref = componentRefs[key];
             const rule = draftConfig.components[key];
+            if (!isRuleConfigured(rule)) {
+                clearError(ref.error, ref.inputField);
+                return;
+            }
+            configuredCount += 1;
             const message = validateRule(rule);
             if (message) {
                 setError(ref.error, ref.inputField, message);
                 isValid = false;
             }
         });
-        if (!isValid && aLaCarteError) {
+        if (configuredCount === 0) {
+            isValid = false;
             if (aLaCarteErrorText) {
-                aLaCarteErrorText.textContent = 'All a-la-carte components must be configured.';
+                aLaCarteErrorText.textContent = 'Configure at least one service.';
             }
-            aLaCarteError.hidden = false;
+            if (aLaCarteError) {
+                aLaCarteError.hidden = false;
+            }
         }
         return isValid;
     };
@@ -404,9 +420,10 @@ document.addEventListener('DOMContentLoaded', function() {
             draftConfig.bundle.active = true;
             return;
         }
-        ['cutlery', 'staffing', 'setup', 'cleanup'].forEach(key => {
-            if (draftConfig.components[key]) {
-                draftConfig.components[key].active = true;
+        componentKeys.forEach(key => {
+            const rule = draftConfig.components[key];
+            if (rule) {
+                rule.active = isRuleConfigured(rule);
             }
         });
     };
@@ -416,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
             draftConfig.bundle.active = false;
             return;
         }
-        ['cutlery', 'staffing', 'setup', 'cleanup'].forEach(key => {
+        componentKeys.forEach(key => {
             if (draftConfig.components[key]) {
                 draftConfig.components[key].active = false;
             }

@@ -147,6 +147,9 @@
                             <p class="card-description">Automatically adjust fees based on the number of guests</p>
                         </div>
                     </div>
+                    <div class="card-summary-row" hidden>
+                        <p class="card-summary" id="guest-count-summary"></p>
+                    </div>
                     <div class="card-divider"></div>
                     <div class="card-footer">
                         <div class="status-tag status-inactive" id="guest-count-status">
@@ -168,6 +171,9 @@
                             <p class="card-description">Charge for on-site services like staffing, setup, and cleanup</p>
                         </div>
                     </div>
+                    <div class="card-summary-row" hidden>
+                        <p class="card-summary" id="full-service-summary"></p>
+                    </div>
                     <div class="card-divider"></div>
                     <div class="card-footer">
                         <div class="status-tag status-inactive" id="full-service-status">
@@ -188,6 +194,9 @@
                             <h3 class="card-title">Subtotal-based fee</h3>
                             <p class="card-description">Automatically adjust fees based on the order subtotal</p>
                         </div>
+                    </div>
+                    <div class="card-summary-row" hidden>
+                        <p class="card-summary" id="order-amount-summary"></p>
                     </div>
                     <div class="card-divider"></div>
                     <div class="card-footer">
@@ -280,7 +289,7 @@
                 <div class="modal-row modal-row-compact" id="preview-full-service-choice" hidden>
                     <span class="modal-label">Service option</span>
                     <div class="segmented-control" id="preview-full-service-segment">
-                        <button class="segment-button segment-selected" type="button" data-value="bundle">Bundled fee</button>
+                        <button class="segment-button segment-selected" type="button" data-value="bundle">Bundled services</button>
                         <button class="segment-button" type="button" data-value="a_la_carte">Individual services</button>
                     </div>
                     <input type="hidden" id="preview-full-service-mode" name="fullServiceMode" value="bundle">

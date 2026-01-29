@@ -410,6 +410,7 @@ body {
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 357px));
+    align-items: start;
     gap: 24px;
     margin-bottom: 24px;
 }
@@ -475,6 +476,29 @@ body {
     line-height: 22px;
     letter-spacing: -0.154px;
     color: var(--grayscale-60);
+}
+
+.card-summary-row {
+    padding: 16px;
+    background-color: var(--grayscale-05);
+    display: flex;
+    align-items: center;
+}
+
+.card-summary-row[hidden] {
+    display: none;
+}
+
+.card-summary {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0.066px;
+    color: var(--grayscale-80);
+}
+
+.card.has-summary .card-divider {
+    display: none;
 }
 
 .card-divider {

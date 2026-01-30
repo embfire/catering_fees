@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (maxValue === null || maxValue === undefined) {
             return `${minLabel}+`;
         }
-        return `${minLabel}-${formatter(maxValue)}`;
+        return `${minLabel} to ${formatter(maxValue)}`;
     };
 
     const parseCurrencyToCents = (value) => {
@@ -365,15 +365,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const range = formatRange(rule.minGuests, rule.maxGuests, (value) => String(value));
             let valueText = '';
             if (rule.calcType === 'percent') {
-                valueText = formatPercent(rule.percent || 0);
+                valueText = `${formatPercent(rule.percent || 0)} of subtotal`;
             } else if (rule.calcType === 'perPerson') {
-                valueText = `${formatCurrencyShort(rule.amountCents || 0)}/person`;
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)} per person`;
             } else {
-                valueText = formatCurrencyShort(rule.amountCents || 0);
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)} flat`;
             }
-            return `(${range}) ${valueText}`;
+            return `${valueText} for ${range} guests`;
         });
-        return parts.join(', ');
+        return parts.join(' • ');
     };
 
     const getOrderAmountSummary = () => {
@@ -388,10 +388,10 @@ document.addEventListener('DOMContentLoaded', function() {
             );
             const valueText = rule.calcType === 'percent'
                 ? formatPercent(rule.percent || 0)
-                : formatCurrencyShort(rule.amountCents || 0);
-            return `(${range}) ${valueText}`;
+                : `${formatCurrencyShort(rule.amountCents || 0)} flat`;
+            return `${valueText} for ${range} subtotal`;
         });
-        return parts.join(', ');
+        return parts.join(' • ');
     };
 
     const getFullServiceSummary = () => {
@@ -401,11 +401,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return '';
             }
             const valueText = config.bundle.calcType === 'percent'
-                ? formatPercent(config.bundle.percent || 0)
+                ? `${formatPercent(config.bundle.percent || 0)} of subtotal`
                 : config.bundle.calcType === 'perPerson'
-                    ? `${formatCurrencyShort(config.bundle.amountCents || 0)}/person`
-                    : formatCurrencyShort(config.bundle.amountCents || 0);
-            return `Bundled ${valueText}`;
+                    ? `${formatCurrencyShort(config.bundle.amountCents || 0)} per person`
+                    : `${formatCurrencyShort(config.bundle.amountCents || 0)} flat`;
+            return `${valueText} for full service`;
         }
 
         const labels = {
@@ -421,15 +421,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!rule) return null;
             let valueText = '';
             if (rule.calcType === 'percent') {
-                valueText = formatPercent(rule.percent || 0);
+                valueText = `${formatPercent(rule.percent || 0)} of subtotal`;
             } else if (rule.calcType === 'perPerson') {
-                valueText = `${formatCurrencyShort(rule.amountCents || 0)}/person`;
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)} per person`;
             } else {
-                valueText = formatCurrencyShort(rule.amountCents || 0);
+                valueText = `${formatCurrencyShort(rule.amountCents || 0)} flat`;
             }
-            return `${labels[key] || key} ${valueText}`;
+            return `${valueText} for ${labels[key] || key}`;
         }).filter(Boolean);
-        return parts.join(', ');
+        return parts.join(' • ');
     };
 
     const updateCardSummaries = (guestActive, orderAmountActive, fullServiceActive) => {

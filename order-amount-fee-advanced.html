@@ -63,12 +63,28 @@
                     </table>
                     <p class="table-empty" id="order-amount-empty" hidden>No subtotal ranges added yet.</p>
                 </div>
+                <div class="inline-error" id="order-amount-inline-error" role="alert" hidden>
+                    <svg class="inline-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="8" cy="8" r="8" fill="#FF3B30"/>
+                        <path d="M8 3.5C7.58579 3.5 7.25 3.83579 7.25 4.25V9.25C7.25 9.66422 7.58579 10 8 10C8.41421 10 8.74999 9.66421 8.74999 9.25V4.25C8.74999 3.83579 8.41421 3.5 8 3.5Z" fill="white"/>
+                        <path d="M8 12.5C8.41421 12.5 8.74999 12.1642 8.74999 11.75C8.74999 11.3358 8.41421 11 8 11C7.58579 11 7.25 11.3358 7.25 11.75C7.25 12.1642 7.58579 12.5 8 12.5Z" fill="white"/>
+                    </svg>
+                    <span class="inline-error-text"></span>
+                </div>
             </section>
 
             <section class="rules-section" data-variant="B">
                 <div class="rules-card">
                     <h2 class="rules-title">Subtotal thresholds</h2>
                     <div class="rules-list" id="order-amount-rules-list"></div>
+                    <div class="inline-error" id="order-amount-inline-error-rules" role="alert" hidden>
+                        <svg class="inline-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle cx="8" cy="8" r="8" fill="#FF3B30"/>
+                            <path d="M8 3.5C7.58579 3.5 7.25 3.83579 7.25 4.25V9.25C7.25 9.66422 7.58579 10 8 10C8.41421 10 8.74999 9.66421 8.74999 9.25V4.25C8.74999 3.83579 8.41421 3.5 8 3.5Z" fill="white"/>
+                            <path d="M8 12.5C8.41421 12.5 8.74999 12.1642 8.74999 11.75C8.74999 11.3358 8.41421 11 8 11C7.58579 11 7.25 11.3358 7.25 11.75C7.25 12.1642 7.58579 12.5 8 12.5Z" fill="white"/>
+                        </svg>
+                        <span class="inline-error-text"></span>
+                    </div>
                     <form class="rules-add-row" id="order-amount-rule-form">
                         <span class="rules-text">If the order amount is equal to or higher than</span>
                         <div class="rules-field">
@@ -149,7 +165,7 @@
         <div class="dialog">
             <div class="dialog-content">
                 <p class="dialog-title">Deactivate subtotal-based fee?</p>
-                <p class="dialog-body">This will stop applying subtotal-based fees to new orders. Your ranges will be saved.</p>
+                <p class="dialog-body">This will stop applying subtotal-based fees to new orders.</p>
             </div>
             <div class="dialog-actions">
                 <button class="btn-secondary" type="button" id="order-amount-deactivate-cancel">Cancel</button>

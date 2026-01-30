@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.getElementById('order-amount-body');
     const tableContainer = document.querySelector('.table-section[data-variant="A"] .table-container');
     const emptyState = document.getElementById('order-amount-empty');
+    const inlineError = document.getElementById('order-amount-inline-error');
     const activationDialog = document.getElementById('order-amount-activation-dialog');
     const activationOk = document.getElementById('order-amount-activation-ok');
     const activationBody = document.getElementById('order-amount-activation-body');
@@ -83,6 +84,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!Number.isFinite(numeric)) return;
         input.value = String(numeric);
     };
+    const showInlineError = (message) => {
+        if (!inlineError) return;
+        const text = inlineError.querySelector('.inline-error-text');
+        if (text) {
+            text.textContent = message || '';
+        }
+        inlineError.hidden = false;
+    };
+    const clearInlineError = () => {
+        if (!inlineError) return;
+        const text = inlineError.querySelector('.inline-error-text');
+        if (text) {
+            text.textContent = '';
+        }
+        inlineError.hidden = true;
+    };
 
     const initRulesVariant = () => {
         const rulesList = document.getElementById('order-amount-rules-list');
@@ -98,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const minError = document.getElementById('order-amount-min-error');
         const feeError = document.getElementById('order-amount-fee-error');
         const globalError = document.getElementById('order-amount-rule-global-error');
+        const inlineError = document.getElementById('order-amount-inline-error-rules');
         const toggleButton = document.getElementById('order-amount-toggle');
         const unsavedBar = document.getElementById('order-amount-unsaved');
         const unsavedCancel = document.getElementById('order-amount-cancel');
@@ -108,6 +126,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const deactivateDialog = document.getElementById('order-amount-deactivate-dialog');
         const deactivateCancel = document.getElementById('order-amount-deactivate-cancel');
         const deactivateConfirm = document.getElementById('order-amount-deactivate-confirm');
+        const showInlineError = (message) => {
+            if (!inlineError) return;
+            const text = inlineError.querySelector('.inline-error-text');
+            if (text) {
+                text.textContent = message || '';
+            }
+            inlineError.hidden = false;
+        };
+        const clearInlineError = () => {
+            if (!inlineError) return;
+            const text = inlineError.querySelector('.inline-error-text');
+            if (text) {
+                text.textContent = '';
+            }
+            inlineError.hidden = true;
+        };
 
         const setDirty = (dirty) => {
             if (!unsavedBar) return;
@@ -164,12 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let draftRules = savedSettings.orderAmountActive ? savedRules.slice() : [];
 
         const openActivationDialog = (message) => {
-            if (!activationDialog) return;
-            if (activationBody && message) {
-                activationBody.textContent = message;
-            }
-            activationDialog.classList.add('is-open');
-            activationDialog.setAttribute('aria-hidden', 'false');
+            showInlineError(message);
         };
 
         const closeActivationDialog = () => {
@@ -265,6 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ruleFeeInput?.classList.remove('input-error');
             ruleMinInput?.closest('.input-field')?.classList.remove('input-error');
             ruleFeeInput?.closest('.input-field')?.classList.remove('input-error');
+            clearInlineError();
         };
 
         const validateNewRule = () => {
@@ -450,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButton?.addEventListener('click', () => {
             if (!savedSettings.orderAmountActive) {
                 if (!draftRules.length) {
-                    openActivationDialog('Add at least one rule before activating this fee.');
+                    openActivationDialog('Add at least one subtotal range.');
                     return;
                 }
                 saveDraftToStore(true);
@@ -467,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (!draftRules.length) {
-                openActivationDialog('Add at least one rule before saving.');
+                openActivationDialog('Add at least one subtotal range.');
                 return;
             }
             saveDraftToStore(true);
@@ -561,12 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const openActivationDialog = (message) => {
-        if (!activationDialog) return;
-        if (activationBody && message) {
-            activationBody.textContent = message;
-        }
-        activationDialog.classList.add('is-open');
-        activationDialog.setAttribute('aria-hidden', 'false');
+        showInlineError(message);
     };
 
     const closeActivationDialog = () => {
@@ -576,9 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const openOpenEndedDialog = () => {
-        if (!openEndedDialog) return;
-        openEndedDialog.classList.add('is-open');
-        openEndedDialog.setAttribute('aria-hidden', 'false');
+        showInlineError('Add an open-ended subtotal range (leave TO empty, ∞) to cover all subtotals.');
     };
 
     const closeOpenEndedDialog = () => {
@@ -708,6 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const { showOpenEndedDialog = true, requireOpenEnded = true } = options;
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         const rules = getRulesFromTable();
+        clearInlineError();
         rows.forEach(clearRowErrors);
 
         let valid = true;
@@ -849,6 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     addRangeButton.addEventListener('click', () => {
+        clearInlineError();
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         if (!rows.length) {
             const firstRow = buildRow({ minSubtotalCents: 0, maxSubtotalCents: null });
@@ -902,6 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('input', (event) => {
         const row = event.target.closest('.range-row');
         if (!row) return;
+        clearInlineError();
         clearRowErrors(row);
         setDirty(computeDirty());
     });
@@ -946,9 +972,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (toggleButton) {
         toggleButton.addEventListener('click', () => {
+            clearInlineError();
             if (!savedSettings.orderAmountActive) {
                 if (!tableBody.querySelectorAll('.range-row').length) {
-                    openActivationDialog('Add at least one subtotal range before activating this fee.');
+                    openActivationDialog('Add at least one subtotal range.');
                     return;
                 }
                 if (!validateRules().valid) {
@@ -966,8 +993,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (unsavedSave) {
         unsavedSave.addEventListener('click', () => {
+            clearInlineError();
             if (!tableBody.querySelectorAll('.range-row').length) {
-                openActivationDialog('Add at least one subtotal range before saving.');
+                openActivationDialog('Add at least one subtotal range.');
                 return;
             }
             if (!validateRules().valid) {

@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.getElementById('guest-range-body');
     const tableContainer = document.querySelector('.table-section[data-variant="A"] .table-container');
     const emptyState = document.getElementById('guest-count-empty');
+    const inlineError = document.getElementById('guest-count-inline-error');
     const activationDialog = document.getElementById('guest-activation-dialog');
     const activationOk = document.getElementById('guest-activation-ok');
     const activationBody = document.getElementById('guest-activation-body');
@@ -84,6 +85,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!Number.isFinite(numeric)) return;
         input.value = String(numeric);
     };
+    const showInlineError = (message) => {
+        if (!inlineError) return;
+        const text = inlineError.querySelector('.inline-error-text');
+        if (text) {
+            text.textContent = message || '';
+        }
+        inlineError.hidden = false;
+    };
+    const clearInlineError = () => {
+        if (!inlineError) return;
+        const text = inlineError.querySelector('.inline-error-text');
+        if (text) {
+            text.textContent = '';
+        }
+        inlineError.hidden = true;
+    };
 
     const initRulesVariant = () => {
         const rulesList = document.getElementById('guest-count-rules-list');
@@ -99,6 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const minError = document.getElementById('guest-count-min-error');
         const feeError = document.getElementById('guest-count-fee-error');
         const globalError = document.getElementById('guest-count-rule-global-error');
+        const inlineError = document.getElementById('guest-count-inline-error-rules');
         const toggleButton = document.getElementById('guest-count-toggle');
         const unsavedBar = document.getElementById('guest-count-unsaved');
         const unsavedCancel = document.getElementById('guest-count-cancel');
@@ -109,6 +127,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const deactivateDialog = document.getElementById('guest-deactivate-dialog');
         const deactivateCancel = document.getElementById('guest-deactivate-cancel');
         const deactivateConfirm = document.getElementById('guest-deactivate-confirm');
+        const showInlineError = (message) => {
+            if (!inlineError) return;
+            const text = inlineError.querySelector('.inline-error-text');
+            if (text) {
+                text.textContent = message || '';
+            }
+            inlineError.hidden = false;
+        };
+        const clearInlineError = () => {
+            if (!inlineError) return;
+            const text = inlineError.querySelector('.inline-error-text');
+            if (text) {
+                text.textContent = '';
+            }
+            inlineError.hidden = true;
+        };
 
         const setDirty = (dirty) => {
             if (!unsavedBar) return;
@@ -168,12 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let draftRules = savedSettings.guestCountActive ? savedRules.slice() : [];
 
         const openActivationDialog = (message) => {
-            if (!activationDialog) return;
-            if (activationBody && message) {
-                activationBody.textContent = message;
-            }
-            activationDialog.classList.add('is-open');
-            activationDialog.setAttribute('aria-hidden', 'false');
+            showInlineError(message);
         };
 
         const closeActivationDialog = () => {
@@ -269,6 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ruleFeeInput?.classList.remove('input-error');
             ruleMinInput?.closest('.input-field')?.classList.remove('input-error');
             ruleFeeInput?.closest('.input-field')?.classList.remove('input-error');
+            clearInlineError();
         };
 
         const validateNewRule = () => {
@@ -453,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleButton?.addEventListener('click', () => {
             if (!savedSettings.guestCountActive) {
                 if (!draftRules.length) {
-                    openActivationDialog('Add at least one guest rule before activating this fee.');
+                    openActivationDialog('Add at least one guest range.');
                     return;
                 }
                 saveDraftToStore(true);
@@ -470,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (!draftRules.length) {
-                openActivationDialog('Add at least one guest rule before saving.');
+                openActivationDialog('Add at least one guest range.');
                 return;
             }
             saveDraftToStore(true);
@@ -563,12 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const openActivationDialog = (message) => {
-        if (!activationDialog) return;
-        if (activationBody && message) {
-            activationBody.textContent = message;
-        }
-        activationDialog.classList.add('is-open');
-        activationDialog.setAttribute('aria-hidden', 'false');
+        showInlineError(message);
     };
 
     const closeActivationDialog = () => {
@@ -578,9 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const openOpenEndedDialog = () => {
-        if (!openEndedDialog) return;
-        openEndedDialog.classList.add('is-open');
-        openEndedDialog.setAttribute('aria-hidden', 'false');
+        showInlineError('Add an open-ended guest range (leave TO empty, ∞) to cover all guest counts.');
     };
 
     const closeOpenEndedDialog = () => {
@@ -707,6 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const { showOpenEndedDialog = true, requireOpenEnded = true } = options;
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         const rules = getRulesFromTable();
+        clearInlineError();
         rows.forEach(clearRowErrors);
 
         let valid = true;
@@ -858,6 +882,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     addRangeButton.addEventListener('click', () => {
+        clearInlineError();
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         if (!rows.length) {
             const firstRow = buildRow({ minGuests: '1', maxGuests: null });
@@ -909,6 +934,7 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('input', (event) => {
         const row = event.target.closest('.range-row');
         if (!row) return;
+        clearInlineError();
         clearRowErrors(row);
         setDirty(computeDirty());
     });
@@ -946,9 +972,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (toggleButton) {
         toggleButton.addEventListener('click', () => {
+            clearInlineError();
             if (!savedSettings.guestCountActive) {
                 if (!tableBody.querySelectorAll('.range-row').length) {
-                    openActivationDialog('Add at least one guest range before activating this fee.');
+                    openActivationDialog('Add at least one guest range.');
                     return;
                 }
                 if (!validateRules().valid) {
@@ -966,8 +993,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (unsavedSave) {
         unsavedSave.addEventListener('click', () => {
+            clearInlineError();
             if (!tableBody.querySelectorAll('.range-row').length) {
-                openActivationDialog('Add at least one guest range before saving.');
+                openActivationDialog('Add at least one guest range.');
                 return;
             }
             if (!validateRules().valid) {

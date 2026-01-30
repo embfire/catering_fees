@@ -483,6 +483,8 @@ body {
     background-color: var(--grayscale-05);
     display: flex;
     align-items: center;
+    border-radius: 8px;
+    margin: 0 16px;
 }
 
 .card-summary-row[hidden] {

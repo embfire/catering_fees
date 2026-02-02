@@ -362,12 +362,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const getOrderAmountSummary = () => {
         const rules = FeesStore.getOrderAmountRules();
         if (!rules.length) return '';
-        const sorted = [...rules].sort((a, b) => Number(a.minSubtotalCents) - Number(b.minSubtotalCents));
+        const sorted = [...rules].sort((a, b) => Number(a.minSubtotalDollars) - Number(b.minSubtotalDollars));
+        const formatDollarRange = (value) => `$${value}`;
         const parts = sorted.map(rule => {
             const range = formatRange(
-                rule.minSubtotalCents,
-                rule.maxSubtotalCents,
-                (value) => formatCurrencyShort(value)
+                rule.minSubtotalDollars,
+                rule.maxSubtotalDollars,
+                formatDollarRange
             );
             const valueText = rule.calcType === 'percent'
                 ? formatPercent(rule.percent || 0)

@@ -1,6 +1,6 @@
 (() => {
     const STORE_KEY = 'cateringFeesStore__A';
-    const STORE_VERSION = 1;
+    const STORE_VERSION = 2;
 
     const createDefaultRule = () => ({
         calcType: 'flat',
@@ -37,6 +37,31 @@
 
     const deepClone = (value) => JSON.parse(JSON.stringify(value));
 
+    const migrateV1ToV2 = (data) => {
+        // Migrate orderAmountRules from cents to dollars
+        const migratedOrderAmountRules = (data.orderAmountRules || []).map(rule => {
+            const migrated = { ...rule };
+            // Convert minSubtotalCents to minSubtotalDollars
+            if ('minSubtotalCents' in rule && !('minSubtotalDollars' in rule)) {
+                migrated.minSubtotalDollars = Math.floor(Number(rule.minSubtotalCents) / 100);
+                delete migrated.minSubtotalCents;
+            }
+            // Convert maxSubtotalCents to maxSubtotalDollars
+            if ('maxSubtotalCents' in rule && !('maxSubtotalDollars' in rule)) {
+                migrated.maxSubtotalDollars = rule.maxSubtotalCents === null 
+                    ? null 
+                    : Math.floor(Number(rule.maxSubtotalCents) / 100);
+                delete migrated.maxSubtotalCents;
+            }
+            return migrated;
+        });
+        return {
+            ...data,
+            version: 2,
+            orderAmountRules: migratedOrderAmountRules
+        };
+    };
+
     const loadStore = () => {
         const raw = localStorage.getItem(STORE_KEY);
         if (!raw) {
@@ -44,8 +69,18 @@
         }
 
         try {
-            const parsed = JSON.parse(raw);
-            if (!parsed || parsed.version !== STORE_VERSION) {
+            let parsed = JSON.parse(raw);
+            if (!parsed) {
+                return createDefaultStore();
+            }
+            // Migrate from version 1 to version 2
+            if (parsed.version === 1) {
+                parsed = migrateV1ToV2(parsed);
+                // Save the migrated data
+                localStorage.setItem(STORE_KEY, JSON.stringify(parsed));
+            }
+            // Reject unknown versions
+            if (parsed.version !== STORE_VERSION) {
                 return createDefaultStore();
             }
             const store = createDefaultStore();
@@ -137,8 +172,8 @@
     });
 
     const findOrderAmountOverlap = (rule, rules) => {
-        const minSubtotal = Number(rule.minSubtotalCents);
-        const maxSubtotal = rule.maxSubtotalCents === null ? null : Number(rule.maxSubtotalCents);
+        const minSubtotal = Number(rule.minSubtotalDollars);
+        const maxSubtotal = rule.maxSubtotalDollars === null ? null : Number(rule.maxSubtotalDollars);
         if (!Number.isFinite(minSubtotal) || (maxSubtotal !== null && !Number.isFinite(maxSubtotal))) {
             return null;
         }
@@ -150,79 +185,18 @@
             return rangesOverlap(
                 minSubtotal,
                 maxSubtotal,
-                Number(existing.minSubtotalCents),
-                existing.maxSubtotalCents === null ? null : Number(existing.maxSubtotalCents)
+                Number(existing.minSubtotalDollars),
+                existing.maxSubtotalDollars === null ? null : Number(existing.maxSubtotalDollars)
             );
         }) || null;
     };
 
     const normalizeOrderAmountRule = (rule) => ({
         ...rule,
-        minSubtotalCents: Number(rule.minSubtotalCents),
-        maxSubtotalCents: rule.maxSubtotalCents === null || rule.maxSubtotalCents === '' ? null : Number(rule.maxSubtotalCents)
+        minSubtotalDollars: Number(rule.minSubtotalDollars),
+        maxSubtotalDollars: rule.maxSubtotalDollars === null || rule.maxSubtotalDollars === '' ? null : Number(rule.maxSubtotalDollars)
     });
 
-    const validateGuestCountContinuity = (rules) => {
-        if (!rules.length) {
-            return { valid: true, message: '' };
-        }
-
-        const sorted = rules
-            .map(normalizeGuestCountRule)
-            .sort((a, b) => a.minGuests - b.minGuests);
-        const firstMin = sorted[0].minGuests;
-        if (firstMin !== 0 && firstMin !== 1) {
-            return { valid: false, message: 'First range must start at 0 or 1.' };
-        }
-
-        for (let i = 0; i < sorted.length; i += 1) {
-            const current = sorted[i];
-            const currentMax = current.maxGuests;
-            if (currentMax === null) {
-                if (i !== sorted.length - 1) {
-                    return { valid: false, message: 'Open-ended range must be the last range.' };
-                }
-                return { valid: true, message: '' };
-            }
-            const next = sorted[i + 1];
-            if (next && next.minGuests !== currentMax + 1) {
-                return { valid: false, message: 'Guest count ranges must be continuous with no gaps.' };
-            }
-        }
-
-        return { valid: true, message: '' };
-    };
-
-    const validateOrderAmountContinuity = (rules) => {
-        if (!rules.length) {
-            return { valid: true, message: '' };
-        }
-
-        const sorted = rules
-            .map(normalizeOrderAmountRule)
-            .sort((a, b) => a.minSubtotalCents - b.minSubtotalCents);
-        const firstMin = sorted[0].minSubtotalCents;
-        if (firstMin !== 0) {
-            return { valid: false, message: 'First range must start at 0.' };
-        }
-
-        for (let i = 0; i < sorted.length; i += 1) {
-            const current = sorted[i];
-            const currentMax = current.maxSubtotalCents;
-            if (currentMax === null) {
-                if (i !== sorted.length - 1) {
-                    return { valid: false, message: 'Open-ended range must be the last range.' };
-                }
-                return { valid: true, message: '' };
-            }
-            const next = sorted[i + 1];
-            if (next && next.minSubtotalCents !== currentMax + 1) {
-                return { valid: false, message: 'Order amount ranges must be continuous with no gaps.' };
-            }
-        }
-
-        return { valid: true, message: '' };
-    };
 
     const validateEventTypeRule = (rule, store) => {
         const name = normalizeName(rule.eventTypeName || '');
@@ -271,31 +245,24 @@
             return { valid: false, message: 'Guest count ranges cannot overlap.' };
         }
 
-        const nextRules = store.guestCountRules.map(normalizeGuestCountRule);
-        const nextIndex = nextRules.findIndex(item => item.id === rule.id);
-        if (nextIndex >= 0) {
-            nextRules[nextIndex] = normalizeGuestCountRule(rule);
-        } else {
-            nextRules.push(normalizeGuestCountRule(rule));
-        }
-
-        const continuity = validateGuestCountContinuity(nextRules);
-        if (!continuity.valid) {
-            return continuity;
-        }
-
         return { valid: true, message: '' };
     };
 
     const validateOrderAmountRule = (rule, store) => {
-        const minSubtotal = Number(rule.minSubtotalCents);
-        const maxSubtotal = rule.maxSubtotalCents === null ? null : Number(rule.maxSubtotalCents);
+        const minSubtotal = Number(rule.minSubtotalDollars);
+        const maxSubtotal = rule.maxSubtotalDollars === null ? null : Number(rule.maxSubtotalDollars);
 
         if (!Number.isFinite(minSubtotal) || minSubtotal < 0) {
             return { valid: false, message: 'Minimum subtotal must be 0 or greater.' };
         }
+        if (Number.isFinite(minSubtotal) && !Number.isInteger(minSubtotal)) {
+            return { valid: false, message: 'Minimum subtotal must be a whole dollar amount.' };
+        }
         if (maxSubtotal !== null && (!Number.isFinite(maxSubtotal) || maxSubtotal < minSubtotal)) {
             return { valid: false, message: 'Maximum subtotal must be greater than or equal to minimum.' };
+        }
+        if (maxSubtotal !== null && Number.isFinite(maxSubtotal) && !Number.isInteger(maxSubtotal)) {
+            return { valid: false, message: 'Maximum subtotal must be a whole dollar amount.' };
         }
         if (rule.calcType === 'percent') {
             if (!isPercentValid(rule.percent)) {
@@ -308,19 +275,6 @@
         const overlap = findOrderAmountOverlap(rule, store.orderAmountRules);
         if (overlap) {
             return { valid: false, message: 'Order amount ranges cannot overlap.' };
-        }
-
-        const nextRules = store.orderAmountRules.map(normalizeOrderAmountRule);
-        const nextIndex = nextRules.findIndex(item => item.id === rule.id);
-        if (nextIndex >= 0) {
-            nextRules[nextIndex] = normalizeOrderAmountRule(rule);
-        } else {
-            nextRules.push(normalizeOrderAmountRule(rule));
-        }
-
-        const continuity = validateOrderAmountContinuity(nextRules);
-        if (!continuity.valid) {
-            return continuity;
         }
 
         return { valid: true, message: '' };
@@ -411,6 +365,7 @@
         } else {
             store.guestCountRules.push(payload);
         }
+        store.guestCountRules.sort((a, b) => a.minGuests - b.minGuests);
     });
 
     const deleteGuestCountRule = (id) => withStore((store) => {
@@ -420,8 +375,8 @@
     const upsertOrderAmountRule = (rule) => withStore((store) => {
         const payload = { ...rule };
         payload.active = payload.active !== false;
-        payload.minSubtotalCents = Number(payload.minSubtotalCents);
-        payload.maxSubtotalCents = payload.maxSubtotalCents === null || payload.maxSubtotalCents === '' ? null : Number(payload.maxSubtotalCents);
+        payload.minSubtotalDollars = Math.floor(Number(payload.minSubtotalDollars));
+        payload.maxSubtotalDollars = payload.maxSubtotalDollars === null || payload.maxSubtotalDollars === '' ? null : Math.floor(Number(payload.maxSubtotalDollars));
         if (!payload.id) {
             payload.id = generateId();
         }
@@ -437,6 +392,7 @@
         } else {
             store.orderAmountRules.push(payload);
         }
+        store.orderAmountRules.sort((a, b) => a.minSubtotalDollars - b.minSubtotalDollars);
     });
 
     const deleteOrderAmountRule = (id) => withStore((store) => {
@@ -479,40 +435,24 @@
         const sorted = (rules || [])
             .map(normalizeGuestCountRule)
             .sort((a, b) => a.minGuests - b.minGuests);
-        const matching = sorted.find(rule => {
+        return sorted.find(rule => {
             const maxGuests = rule.maxGuests === null ? Infinity : rule.maxGuests;
             return rule.minGuests <= count && count <= maxGuests;
-        });
-        if (matching) {
-            return matching;
-        }
-        const lower = sorted.filter(rule => rule.minGuests < count);
-        if (!lower.length) {
-            return null;
-        }
-        return lower.reduce((best, rule) => (rule.minGuests > best.minGuests ? rule : best), lower[0]);
+        }) || null;
     };
 
     const getOrderAmountRuleForSubtotal = (subtotalCents, rules) => {
-        const subtotal = Number(subtotalCents);
-        if (!Number.isFinite(subtotal)) {
+        const subtotalDollars = Math.floor(Number(subtotalCents) / 100);
+        if (!Number.isFinite(subtotalDollars)) {
             return null;
         }
         const sorted = (rules || [])
             .map(normalizeOrderAmountRule)
-            .sort((a, b) => a.minSubtotalCents - b.minSubtotalCents);
-        const matching = sorted.find(rule => {
-            const maxSubtotal = rule.maxSubtotalCents === null ? Infinity : rule.maxSubtotalCents;
-            return rule.minSubtotalCents <= subtotal && subtotal <= maxSubtotal;
-        });
-        if (matching) {
-            return matching;
-        }
-        const lower = sorted.filter(rule => rule.minSubtotalCents < subtotal);
-        if (!lower.length) {
-            return null;
-        }
-        return lower.reduce((best, rule) => (rule.minSubtotalCents > best.minSubtotalCents ? rule : best), lower[0]);
+            .sort((a, b) => a.minSubtotalDollars - b.minSubtotalDollars);
+        return sorted.find(rule => {
+            const maxDollars = rule.maxSubtotalDollars === null ? Infinity : rule.maxSubtotalDollars;
+            return rule.minSubtotalDollars <= subtotalDollars && subtotalDollars <= maxDollars;
+        }) || null;
     };
 
     window.FeesStore = {

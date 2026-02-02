@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let draftRules = savedSettings.guestCountActive ? clone(savedRules) : [];
     let draftSettings = { ...savedSettings };
     let isDirty = false;
+    let lastEditedRowIndex = null;
 
     const setDirty = (dirty) => {
         isDirty = dirty;
@@ -287,8 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    const validateRules = (options = {}) => {
-        const { showOpenEndedDialog = true, requireOpenEnded = true } = options;
+    const validateRules = () => {
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         const rules = getRulesFromTable();
         clearInlineError();
@@ -352,48 +352,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const ordered = parsed
             .map((rule, index) => ({ ...rule, index }))
             .sort((a, b) => a.min - b.min);
-        const first = ordered[0];
-        if (first && first.min !== 0 && first.min !== 1) {
-            const row = rows[first.index];
-            setRowError(row, '[data-error="min"]', 'First range must start at 0 or 1.');
-            row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-            return { valid: false };
-        }
 
         for (let i = 0; i < ordered.length; i += 1) {
             const current = ordered[i];
-            const row = rows[current.index];
+            if (current.max === null && i !== ordered.length - 1) {
+                const next = ordered[i + 1];
+                const rowToFlag = (lastEditedRowIndex === current.index)
+                    ? rows[current.index]
+                    : rows[next.index];
+                const errorField = (lastEditedRowIndex === current.index) ? '[data-error="max"]' : '[data-error="min"]';
+                const inputField = (lastEditedRowIndex === current.index) ? '[data-field="max"]' : '[data-field="min"]';
+                setRowError(rowToFlag, errorField, 'Ranges cannot overlap.');
+                rowToFlag.querySelector(inputField).closest('.input-field').classList.add('input-error');
+                return { valid: false };
+            }
             if (current.max === null) {
-                if (i !== ordered.length - 1) {
-                    setRowError(row, '[data-error="max"]', 'Open-ended range must be the last range.');
-                    row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
                 continue;
             }
             const next = ordered[i + 1];
-            if (next) {
-                if (next.min <= current.max) {
-                    const nextRow = rows[next.index];
-                    setRowError(nextRow, '[data-error="min"]', 'Guest count ranges must be continuous with no gaps or overlaps.');
-                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
-                if (next.min !== current.max + 1) {
-                    const nextRow = rows[next.index];
-                    setRowError(nextRow, '[data-error="min"]', 'Guest count ranges must be continuous with no gaps or overlaps.');
-                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
-            }
-        }
-
-        if (requireOpenEnded) {
-            const last = ordered[ordered.length - 1];
-            if (last && last.max !== null) {
-                if (showOpenEndedDialog) {
-                    openOpenEndedDialog();
-                }
+            if (next && next.min <= current.max) {
+                const rowToFlag = (lastEditedRowIndex === current.index)
+                    ? rows[current.index]
+                    : rows[next.index];
+                const errorField = (lastEditedRowIndex === current.index) ? '[data-error="max"]' : '[data-error="min"]';
+                const inputField = (lastEditedRowIndex === current.index) ? '[data-field="max"]' : '[data-field="min"]';
+                setRowError(rowToFlag, errorField, 'Ranges cannot overlap.');
+                rowToFlag.querySelector(inputField).closest('.input-field').classList.add('input-error');
                 return { valid: false };
             }
         }
@@ -404,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const saveDraftToStore = (active) => {
         const rules = getRulesFromTable().filter(rule => rule.minGuests !== '');
         const store = FeesStore.loadStore();
-        store.guestCountRules = clone(rules);
+        store.guestCountRules = clone(rules).sort((a, b) => Number(a.minGuests) - Number(b.minGuests));
         store.settings = {
             ...store.settings,
             guestCountActive: active
@@ -414,6 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
         savedSettings = { ...store.settings };
         draftRules = clone(savedRules);
         draftSettings = { ...savedSettings };
+        lastEditedRowIndex = null;
         updateToggleLabel(savedSettings.guestCountActive);
         renderTable();
     };
@@ -448,6 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!rows.length) {
             const firstRow = buildRow({ minGuests: '1', maxGuests: null });
             tableBody.appendChild(firstRow);
+            lastEditedRowIndex = 0;
             updateAllAmountAffixes();
             setDirty(true);
             updateEmptyState();
@@ -469,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
             lastAmountInput.closest('.input-field').classList.add('input-error');
             return;
         }
-        if (!validateRules({ showOpenEndedDialog: false, requireOpenEnded: false }).valid) {
+        if (!validateRules().valid) {
             return;
         }
         let newFrom = 1;
@@ -487,6 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
             percent: null
         };
         tableBody.appendChild(buildRow(newRule));
+        lastEditedRowIndex = tableBody.querySelectorAll('.range-row').length - 1;
         updateAllAmountAffixes();
         setDirty(true);
         updateEmptyState();
@@ -495,6 +482,8 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('input', (event) => {
         const row = event.target.closest('.range-row');
         if (!row) return;
+        const rows = Array.from(tableBody.querySelectorAll('.range-row'));
+        lastEditedRowIndex = rows.indexOf(row);
         clearInlineError();
         clearRowErrors(row);
         setDirty(computeDirty());
@@ -571,6 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
         unsavedCancel.addEventListener('click', () => {
             draftRules = clone(savedRules);
             draftSettings = { ...savedSettings };
+            lastEditedRowIndex = null;
             renderTable();
             updateAllAmountAffixes();
             setDirty(false);

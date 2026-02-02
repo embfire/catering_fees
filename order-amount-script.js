@@ -41,6 +41,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return Math.round(numeric * 100);
     };
+    const parseWholeDollars = (value) => {
+        const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ''));
+        if (!Number.isFinite(numeric)) {
+            return null;
+        }
+        return Math.floor(numeric);
+    };
     const parsePercent = (value) => {
         const numeric = parseFloat(String(value).replace(/[^0-9.]/g, ''));
         if (!Number.isFinite(numeric)) {
@@ -55,6 +62,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const numeric = parseFloat(rawValue);
         if (!Number.isFinite(numeric)) return;
         input.value = numeric.toFixed(2);
+    };
+    const formatWholeNumberInput = (input) => {
+        if (!input) return;
+        const rawValue = String(input.value || '').trim();
+        if (!rawValue) return;
+        const numeric = parseFloat(rawValue);
+        if (!Number.isFinite(numeric)) return;
+        input.value = String(Math.floor(numeric));
     };
     const formatPercentInput = (input) => {
         if (!input) return;
@@ -86,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const clone = (value) => JSON.parse(JSON.stringify(value));
     const normalizeRules = (rules) => clone(rules).map(rule => ({
         id: rule.id,
-        minSubtotalCents: rule.minSubtotalCents,
-        maxSubtotalCents: rule.maxSubtotalCents,
+        minSubtotalDollars: rule.minSubtotalDollars,
+        maxSubtotalDollars: rule.maxSubtotalDollars,
         calcType: rule.calcType,
         amountCents: rule.amountCents,
         percent: rule.percent,
@@ -99,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let draftRules = savedSettings.orderAmountActive ? clone(savedRules) : [];
     let draftSettings = { ...savedSettings };
     let isDirty = false;
+    let lastEditedRowIndex = null;
 
     const setDirty = (dirty) => {
         isDirty = dirty;
@@ -207,20 +223,20 @@ document.addEventListener('DOMContentLoaded', function() {
         row.className = 'range-row';
         row.dataset.id = rule.id || '';
         const calcType = getDefaultCalcType(rule);
-        const minValue = Number.isFinite(rule.minSubtotalCents) ? formatDollars(rule.minSubtotalCents) : '';
-        const maxValue = Number.isFinite(rule.maxSubtotalCents) ? formatDollars(rule.maxSubtotalCents) : '';
+        const minValue = Number.isFinite(rule.minSubtotalDollars) ? rule.minSubtotalDollars : '';
+        const maxValue = Number.isFinite(rule.maxSubtotalDollars) ? rule.maxSubtotalDollars : '';
         row.innerHTML = `
             <td>
                 <div class="input-field input-field-compact">
                     <span class="input-prefix range-prefix">$</span>
-                    <input type="number" class="text-input range-input" data-field="min" min="0" step="0.01" value="${minValue}">
+                    <input type="number" class="text-input range-input" data-field="min" min="0" step="1" value="${minValue}">
                 </div>
                 <p class="form-error range-error" data-error="min"></p>
             </td>
             <td>
                 <div class="input-field input-field-compact">
                     <span class="input-prefix range-prefix">$</span>
-                    <input type="number" class="text-input range-input" data-field="max" min="0" step="0.01" value="${maxValue}" placeholder="∞">
+                    <input type="number" class="text-input range-input" data-field="max" min="0" step="1" value="${maxValue}" placeholder="∞">
                 </div>
                 <p class="form-error range-error" data-error="max"></p>
             </td>
@@ -262,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const renderTable = () => {
         tableBody.innerHTML = '';
-        const ranges = clone(draftRules).sort((a, b) => Number(a.minSubtotalCents) - Number(b.minSubtotalCents));
+        const ranges = clone(draftRules).sort((a, b) => Number(a.minSubtotalDollars) - Number(b.minSubtotalDollars));
         if (!ranges.length) {
             updateEmptyState();
             return;
@@ -281,8 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const calcType = getRowCalcType(row);
             return {
                 id: row.dataset.id || undefined,
-                minSubtotalCents: parseCurrencyToCents(minValue),
-                maxSubtotalCents: maxValue === '' ? null : parseCurrencyToCents(maxValue),
+                minSubtotalDollars: parseWholeDollars(minValue),
+                maxSubtotalDollars: maxValue === '' ? null : parseWholeDollars(maxValue),
                 calcType,
                 amountCents: calcType === 'percent' ? 0 : parseCurrencyToCents(amountValue),
                 percent: calcType === 'percent' ? parsePercent(amountValue) : 0,
@@ -291,8 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    const validateRules = (options = {}) => {
-        const { showOpenEndedDialog = true, requireOpenEnded = true } = options;
+    const validateRules = () => {
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         const rules = getRulesFromTable();
         clearInlineError();
@@ -300,8 +315,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let valid = true;
         const parsed = rules.map(rule => ({
-            min: rule.minSubtotalCents,
-            max: rule.maxSubtotalCents === null ? null : rule.maxSubtotalCents,
+            min: rule.minSubtotalDollars,
+            max: rule.maxSubtotalDollars === null ? null : rule.maxSubtotalDollars,
             amountCents: rule.amountCents,
             percent: rule.percent,
             calcType: rule.calcType
@@ -346,48 +361,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const ordered = parsed
             .map((rule, index) => ({ ...rule, index }))
             .sort((a, b) => a.min - b.min);
-        const first = ordered[0];
-        if (first && first.min !== 0) {
-            const row = rows[first.index];
-            setRowError(row, '[data-error="min"]', 'First range must start at 0.');
-            row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-            return { valid: false };
-        }
 
         for (let i = 0; i < ordered.length; i += 1) {
             const current = ordered[i];
-            const row = rows[current.index];
+            if (current.max === null && i !== ordered.length - 1) {
+                const next = ordered[i + 1];
+                const rowToFlag = (lastEditedRowIndex === current.index)
+                    ? rows[current.index]
+                    : rows[next.index];
+                const errorField = (lastEditedRowIndex === current.index) ? '[data-error="max"]' : '[data-error="min"]';
+                const inputField = (lastEditedRowIndex === current.index) ? '[data-field="max"]' : '[data-field="min"]';
+                setRowError(rowToFlag, errorField, 'Ranges cannot overlap.');
+                rowToFlag.querySelector(inputField).closest('.input-field').classList.add('input-error');
+                return { valid: false };
+            }
             if (current.max === null) {
-                if (i !== ordered.length - 1) {
-                    setRowError(row, '[data-error="max"]', 'Open-ended range must be the last range.');
-                    row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
                 continue;
             }
             const next = ordered[i + 1];
-            if (next) {
-                if (next.min <= current.max) {
-                    const nextRow = rows[next.index];
-                    setRowError(nextRow, '[data-error="min"]', 'Subtotal ranges must be continuous with no gaps or overlaps.');
-                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
-                if (next.min !== current.max + 1) {
-                    const nextRow = rows[next.index];
-                    setRowError(nextRow, '[data-error="min"]', 'Subtotal ranges must be continuous with no gaps or overlaps.');
-                    nextRow.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
-                    return { valid: false };
-                }
-            }
-        }
-
-        if (requireOpenEnded) {
-            const last = ordered[ordered.length - 1];
-            if (last && last.max !== null) {
-                if (showOpenEndedDialog) {
-                    openOpenEndedDialog();
-                }
+            if (next && next.min <= current.max) {
+                const rowToFlag = (lastEditedRowIndex === current.index)
+                    ? rows[current.index]
+                    : rows[next.index];
+                const errorField = (lastEditedRowIndex === current.index) ? '[data-error="max"]' : '[data-error="min"]';
+                const inputField = (lastEditedRowIndex === current.index) ? '[data-field="max"]' : '[data-field="min"]';
+                setRowError(rowToFlag, errorField, 'Ranges cannot overlap.');
+                rowToFlag.querySelector(inputField).closest('.input-field').classList.add('input-error');
                 return { valid: false };
             }
         }
@@ -396,9 +395,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     const saveDraftToStore = (active) => {
-        const rules = getRulesFromTable().filter(rule => Number.isFinite(rule.minSubtotalCents));
+        const rules = getRulesFromTable().filter(rule => Number.isFinite(rule.minSubtotalDollars));
         const store = FeesStore.loadStore();
-        store.orderAmountRules = clone(rules);
+        store.orderAmountRules = clone(rules).sort((a, b) => Number(a.minSubtotalDollars) - Number(b.minSubtotalDollars));
         store.settings = {
             ...store.settings,
             orderAmountActive: active
@@ -408,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         savedSettings = { ...store.settings };
         draftRules = clone(savedRules);
         draftSettings = { ...savedSettings };
+        lastEditedRowIndex = null;
         updateToggleLabel(savedSettings.orderAmountActive);
         renderTable();
     };
@@ -440,8 +440,9 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInlineError();
         const rows = Array.from(tableBody.querySelectorAll('.range-row'));
         if (!rows.length) {
-            const firstRow = buildRow({ minSubtotalCents: 0, maxSubtotalCents: null });
+            const firstRow = buildRow({ minSubtotalDollars: 0, maxSubtotalDollars: null });
             tableBody.appendChild(firstRow);
+            lastEditedRowIndex = 0;
             updateAllAmountAffixes();
             setDirty(true);
             updateEmptyState();
@@ -463,26 +464,27 @@ document.addEventListener('DOMContentLoaded', function() {
             lastAmountInput.closest('.input-field').classList.add('input-error');
             return;
         }
-        if (!validateRules({ showOpenEndedDialog: false, requireOpenEnded: false }).valid) {
+        if (!validateRules().valid) {
             return;
         }
-        const lastMinCents = parseCurrencyToCents(lastMinInput.value);
-        const lastMaxCents = lastMaxInput.value ? parseCurrencyToCents(lastMaxInput.value) : null;
-        let newFromCents = 0;
-        if (Number.isFinite(lastMaxCents)) {
-            newFromCents = lastMaxCents + 1;
+        const lastMinDollars = parseWholeDollars(lastMinInput.value);
+        const lastMaxDollars = lastMaxInput.value ? parseWholeDollars(lastMaxInput.value) : null;
+        let newFromDollars = 0;
+        if (Number.isFinite(lastMaxDollars)) {
+            newFromDollars = lastMaxDollars + 1;
         } else {
-            newFromCents = Number.isFinite(lastMinCents) ? lastMinCents + 10000 : 10000;
-            lastMaxInput.value = formatDollars(newFromCents - 1);
+            newFromDollars = Number.isFinite(lastMinDollars) ? lastMinDollars + 100 : 100;
+            lastMaxInput.value = String(newFromDollars - 1);
         }
         const newRule = {
-            minSubtotalCents: newFromCents,
-            maxSubtotalCents: null,
+            minSubtotalDollars: newFromDollars,
+            maxSubtotalDollars: null,
             calcType: getRowCalcType(lastRow) || 'flat',
             amountCents: null,
             percent: null
         };
         tableBody.appendChild(buildRow(newRule));
+        lastEditedRowIndex = tableBody.querySelectorAll('.range-row').length - 1;
         updateAllAmountAffixes();
         setDirty(true);
         updateEmptyState();
@@ -491,6 +493,8 @@ document.addEventListener('DOMContentLoaded', function() {
     tableBody.addEventListener('input', (event) => {
         const row = event.target.closest('.range-row');
         if (!row) return;
+        const rows = Array.from(tableBody.querySelectorAll('.range-row'));
+        lastEditedRowIndex = rows.indexOf(row);
         clearInlineError();
         clearRowErrors(row);
         setDirty(computeDirty());
@@ -501,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!input) return;
         const field = input.dataset.field;
         if (field === 'min' || field === 'max') {
-            formatDollarInput(input);
+            formatWholeNumberInput(input);
             return;
         }
         if (field === 'amount') {
@@ -574,6 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
         unsavedCancel.addEventListener('click', () => {
             draftRules = clone(savedRules);
             draftSettings = { ...savedSettings };
+            lastEditedRowIndex = null;
             renderTable();
             updateAllAmountAffixes();
             setDirty(false);

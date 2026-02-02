@@ -995,6 +995,41 @@ html[data-fees-variant="B"] .rules-add-button {
     width: 100%;
 }
 
+/* Subtotal ranges: FROM and TO inputs fill available column width */
+.order-amount-advanced .fee-table-editable {
+    table-layout: fixed;
+}
+.order-amount-advanced .fee-table-editable thead th,
+.order-amount-advanced .fee-table-editable tbody td {
+    padding: 8px;
+}
+/* CALCULATION column: fixed width for Flat/Percent buttons */
+.order-amount-advanced .fee-table-editable th:nth-child(3),
+.order-amount-advanced .fee-table-editable td:nth-child(3) {
+    width: 160px;
+}
+/* FEE column: fixed width for fee input */
+.order-amount-advanced .fee-table-editable th:nth-child(4),
+.order-amount-advanced .fee-table-editable td:nth-child(4) {
+    width: 150px;
+}
+/* Delete column */
+.order-amount-advanced .fee-table-editable th:last-child,
+.order-amount-advanced .fee-table-editable td:last-child {
+    width: 50px;
+}
+/* FROM and TO inputs fill their cells */
+.order-amount-advanced .fee-table-editable td:nth-child(1) .input-field,
+.order-amount-advanced .fee-table-editable td:nth-child(2) .input-field {
+    width: 100%;
+    min-width: 0;
+}
+.order-amount-advanced .fee-table-editable td:nth-child(1) .range-input,
+.order-amount-advanced .fee-table-editable td:nth-child(2) .range-input {
+    min-width: 0;
+    width: 100%;
+}
+
 .fee-table-editable td {
     vertical-align: top;
 }

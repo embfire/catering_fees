@@ -1,21 +1,5 @@
 // Full-service fee configuration with mode selector
 document.addEventListener('DOMContentLoaded', function() {
-    const getVariant = () => {
-        const fromWindow = window.FeesVariant;
-        if (fromWindow === 'A' || fromWindow === 'B') {
-            return fromWindow;
-        }
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const value = (params.get('variant') || 'A').toUpperCase();
-            return value === 'B' ? 'B' : 'A';
-        } catch (error) {
-            return 'A';
-        }
-    };
-
-    const variant = getVariant();
-    const withVariant = (path) => `${path}?variant=${encodeURIComponent(variant)}`;
     const closeButton = document.querySelector('.close-button');
     const toggleButton = document.getElementById('full-service-toggle');
     const unsavedBar = document.getElementById('full-service-unsaved');
@@ -38,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (closeButton) {
         closeButton.addEventListener('click', function() {
-            window.location.href = withVariant('index.html');
+            window.location.href = 'index.html';
         });
     }
 
@@ -453,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateToggleLabel(true);
                     setDirty(false);
                     setSnackbarMessage('Fee successfully activated');
-                    window.location.href = withVariant('index.html');
+                    window.location.href = 'index.html';
                 } catch (error) {
                     setError(bundleError, bundleInputField, error.message || 'Unable to save full-service fee.');
                 }
@@ -476,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setDirty(false);
             closeDeactivateDialog();
             setSnackbarMessage('Fee deactivated');
-            window.location.href = withVariant('index.html');
+            window.location.href = 'index.html';
         });
     }
 

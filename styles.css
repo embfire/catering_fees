@@ -652,267 +652,6 @@ input[type="number"] {
     display: none;
 }
 
-/* Rules Pattern */
-.fee-variant-gate {
-    display: none;
-}
-
-html[data-fees-variant="A"] [data-variant="B"] {
-    display: none !important;
-}
-
-html[data-fees-variant="B"] [data-variant="A"] {
-    display: none !important;
-}
-
-.rules-section {
-    width: 736px;
-    margin-top: 16px;
-}
-
-html[data-fees-variant="B"] .page-header,
-html[data-fees-variant="B"] .rules-section,
-html[data-fees-variant="B"] .table-section {
-    width: 800px;
-}
-
-.rules-card {
-    border: 1px solid var(--grayscale-20);
-    border-radius: 8px;
-    padding: 16px;
-    background-color: transparent;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.rules-title {
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 20px;
-    color: var(--grayscale-100);
-}
-
-.rules-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.rules-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--grayscale-10);
-}
-
-.rules-row:last-child {
-    border-bottom: none;
-}
-
-.rules-row-text {
-    font-size: 14px;
-    line-height: 20px;
-    color: var(--grayscale-100);
-}
-
-.rules-delete {
-    opacity: 1;
-    pointer-events: auto;
-    border: 1px solid var(--grayscale-20);
-    background-color: var(--grayscale-white);
-}
-
-.rules-delete:hover {
-    background-color: var(--grayscale-05);
-}
-
-.rules-delete-disabled {
-    opacity: 0.4;
-    pointer-events: none;
-}
-
-.rules-add-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    overflow: visible;
-}
-
-.rules-text {
-    font-size: 14px;
-    line-height: 20px;
-    color: var(--grayscale-100);
-}
-
-.rules-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.rules-input {
-    width: 110px;
-}
-
-.rules-input-min {
-    width: 64px;
-}
-
-.rules-input-fee {
-    width: 72px;
-}
-
-html[data-fees-variant="B"] .rules-add-row {
-    display: grid;
-    grid-template-columns: max-content minmax(80px, 1fr) max-content minmax(80px, 1fr) 120px max-content;
-    column-gap: 12px;
-    align-items: center;
-}
-
-html[data-fees-variant="B"] .rules-text {
-    white-space: nowrap;
-}
-
-html[data-fees-variant="B"] .rules-field {
-    min-width: 0;
-}
-
-html[data-fees-variant="B"] .rules-field .input-field {
-    width: 100%;
-    min-width: 0;
-}
-
-html[data-fees-variant="B"] .rules-field .select-field {
-    width: 120px;
-    min-width: 120px;
-    display: inline-flex;
-}
-
-html[data-fees-variant="B"] .rules-field .select-field .select-text {
-    white-space: nowrap;
-}
-
-html[data-fees-variant="B"] .rules-input,
-html[data-fees-variant="B"] .rules-input-min,
-html[data-fees-variant="B"] .rules-input-fee {
-    flex: 1 1 auto;
-    width: auto;
-    min-width: 80px;
-}
-
-html[data-fees-variant="B"] .rules-field .text-input {
-    min-width: 0;
-}
-
-html[data-fees-variant="B"] .rules-input-min {
-    width: 100%;
-}
-
-html[data-fees-variant="B"] .rules-input-fee {
-    width: 100%;
-}
-
-html[data-fees-variant="B"] .rules-add-button {
-    flex: 0 0 auto;
-}
-
-.rules-select {
-    height: 34px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid var(--grayscale-20);
-    background-color: var(--grayscale-white);
-    font-size: 14px;
-    color: var(--grayscale-100);
-}
-
-.rules-section .select-menu {
-    min-width: 160px;
-    right: auto;
-    z-index: 50;
-}
-
-.rules-error {
-    font-size: 10px;
-    line-height: 14px;
-    letter-spacing: 0.12px;
-    color: var(--status-error);
-}
-
-.rules-error:empty {
-    display: none;
-}
-
-.rules-error-global {
-    margin-top: 4px;
-}
-
-.rules-empty {
-    font-size: 14px;
-    color: var(--grayscale-60);
-    padding: 10px 0;
-}
-
-.rules-divider {
-    height: 1px;
-    width: 100%;
-    background-color: var(--grayscale-10);
-}
-
-.rules-add-button {
-    padding: 7px 14px;
-}
-
-/* Guest count B variant refinements */
-.guest-count-advanced .rules-section {
-    margin-top: 0;
-}
-
-.guest-count-advanced .rules-card {
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    background-color: transparent;
-    gap: 16px;
-}
-
-.guest-count-advanced .rules-title {
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 22px;
-    letter-spacing: -0.408px;
-}
-
-.guest-count-advanced .rules-row {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--grayscale-transparent-7);
-}
-
-.guest-count-advanced .rules-divider {
-    background-color: var(--grayscale-transparent-7);
-}
-
-.guest-count-advanced .rules-text {
-    line-height: 22px;
-}
-
-.rules-field-muted .input-field {
-    background-color: var(--grayscale-05);
-}
-
-.guest-count-advanced .rules-card .select-field {
-    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.06);
-    border-color: var(--grayscale-20);
-    background-color: var(--grayscale-white);
-}
-
-.guest-count-advanced .rules-add-button {
-    padding: 7px 12px;
-}
-
 /* Table Section */
 .table-section {
     width: 736px;
@@ -945,87 +684,87 @@ html[data-fees-variant="B"] .rules-add-button {
     position: relative;
 }
 
-.guest-count-advanced .page-header {
+.guest-count-page .page-header {
     margin-bottom: 16px;
 }
 
-.guest-count-advanced .table-section {
+.guest-count-page .table-section {
     margin-top: 16px;
     gap: 16px;
 }
 
-.guest-count-advanced .fee-table-editable {
+.guest-count-page .fee-table-editable {
     table-layout: fixed;
 }
 
-.guest-count-advanced .fee-table-editable thead th {
+.guest-count-page .fee-table-editable thead th {
     padding: 8px;
 }
 
-.guest-count-advanced .fee-table-editable tbody td {
+.guest-count-page .fee-table-editable tbody td {
     padding: 8px;
 }
 
-.guest-count-advanced .fee-table-editable th:last-child,
-.guest-count-advanced .fee-table-editable td:last-child {
+.guest-count-page .fee-table-editable th:last-child,
+.guest-count-page .fee-table-editable td:last-child {
     width: 50px;
 }
 
-.guest-count-advanced .fee-table-editable th:nth-child(3),
-.guest-count-advanced .fee-table-editable td:nth-child(3) {
+.guest-count-page .fee-table-editable th:nth-child(3),
+.guest-count-page .fee-table-editable td:nth-child(3) {
     width: 260px;
 }
 
-.guest-count-advanced .fee-table-editable th:nth-child(4),
-.guest-count-advanced .fee-table-editable td:nth-child(4) {
+.guest-count-page .fee-table-editable th:nth-child(4),
+.guest-count-page .fee-table-editable td:nth-child(4) {
     width: 160px;
 }
 
-.guest-count-advanced .calc-type-control {
+.guest-count-page .calc-type-control {
     flex-wrap: nowrap;
 }
 
-.guest-count-advanced .input-field-compact {
+.guest-count-page .input-field-compact {
     height: 34px;
     padding: 6px 12px;
 }
 
-.guest-count-advanced .range-input {
+.guest-count-page .range-input {
     min-width: 0;
     width: 100%;
 }
 
 /* Subtotal ranges: FROM and TO inputs fill available column width */
-.order-amount-advanced .fee-table-editable {
+.order-amount-page .fee-table-editable {
     table-layout: fixed;
 }
-.order-amount-advanced .fee-table-editable thead th,
-.order-amount-advanced .fee-table-editable tbody td {
+.order-amount-page .fee-table-editable thead th,
+.order-amount-page .fee-table-editable tbody td {
     padding: 8px;
 }
 /* CALCULATION column: fixed width for Flat/Percent buttons */
-.order-amount-advanced .fee-table-editable th:nth-child(3),
-.order-amount-advanced .fee-table-editable td:nth-child(3) {
+.order-amount-page .fee-table-editable th:nth-child(3),
+.order-amount-page .fee-table-editable td:nth-child(3) {
     width: 160px;
 }
 /* FEE column: fixed width for fee input */
-.order-amount-advanced .fee-table-editable th:nth-child(4),
-.order-amount-advanced .fee-table-editable td:nth-child(4) {
+.order-amount-page .fee-table-editable th:nth-child(4),
+.order-amount-page .fee-table-editable td:nth-child(4) {
     width: 150px;
 }
 /* Delete column */
-.order-amount-advanced .fee-table-editable th:last-child,
-.order-amount-advanced .fee-table-editable td:last-child {
+.order-amount-page .fee-table-editable th:last-child,
+.order-amount-page .fee-table-editable td:last-child {
     width: 50px;
 }
 /* FROM and TO inputs fill their cells */
-.order-amount-advanced .fee-table-editable td:nth-child(1) .input-field,
-.order-amount-advanced .fee-table-editable td:nth-child(2) .input-field {
+.order-amount-page .fee-table-editable td:nth-child(1) .input-field,
+.order-amount-page .fee-table-editable td:nth-child(2) .input-field {
     width: 100%;
     min-width: 0;
 }
-.order-amount-advanced .fee-table-editable td:nth-child(1) .range-input,
-.order-amount-advanced .fee-table-editable td:nth-child(2) .range-input {
+.order-amount-page .fee-table-editable td:nth-child(1) .range-input,
+.order-amount-page .fee-table-editable td:nth-child(2) .range-input {
     min-width: 0;
     width: 100%;
 }
@@ -1048,7 +787,7 @@ html[data-fees-variant="B"] .rules-add-button {
     width: 110px;
 }
 
-.guest-count-advanced .range-input {
+.guest-count-page .range-input {
     width: 100%;
 }
 

@@ -227,10 +227,10 @@
         const maxGuests = rule.maxGuests === null ? null : Number(rule.maxGuests);
 
         if (!Number.isFinite(minGuests) || minGuests < 0) {
-            return { valid: false, message: 'Minimum guests must be 0 or greater.' };
+            return { valid: false, message: 'Minimum party size must be 0 or greater.' };
         }
         if (maxGuests !== null && (!Number.isFinite(maxGuests) || maxGuests < minGuests)) {
-            return { valid: false, message: 'Maximum guests must be greater than or equal to minimum.' };
+            return { valid: false, message: 'Maximum party size must be greater than or equal to minimum.' };
         }
         if (rule.calcType === 'percent') {
             if (!isPercentValid(rule.percent)) {
@@ -242,7 +242,7 @@
 
         const overlap = findGuestCountOverlap(rule, store.guestCountRules);
         if (overlap) {
-            return { valid: false, message: 'Guest count ranges cannot overlap.' };
+            return { valid: false, message: 'Party size ranges cannot overlap.' };
         }
 
         return { valid: true, message: '' };

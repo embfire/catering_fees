@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const activationDialog = document.getElementById('order-amount-activation-dialog');
     const activationOk = document.getElementById('order-amount-activation-ok');
     const activationBody = document.getElementById('order-amount-activation-body');
-    const openEndedDialog = document.getElementById('order-amount-open-ended-dialog');
-    const openEndedOk = document.getElementById('order-amount-open-ended-ok');
     const deactivateDialog = document.getElementById('order-amount-deactivate-dialog');
     const deactivateCancel = document.getElementById('order-amount-deactivate-cancel');
     const deactivateConfirm = document.getElementById('order-amount-deactivate-confirm');
@@ -178,16 +176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!activationDialog) return;
         activationDialog.classList.remove('is-open');
         activationDialog.setAttribute('aria-hidden', 'true');
-    };
-
-    const openOpenEndedDialog = () => {
-        showInlineError('Add an open-ended subtotal range (leave TO empty, ∞) to cover all subtotals.');
-    };
-
-    const closeOpenEndedDialog = () => {
-        if (!openEndedDialog) return;
-        openEndedDialog.classList.remove('is-open');
-        openEndedDialog.setAttribute('aria-hidden', 'true');
     };
 
     const openDeactivateDialog = () => {
@@ -587,9 +575,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (activationOk) {
         activationOk.addEventListener('click', closeActivationDialog);
-    }
-    if (openEndedOk) {
-        openEndedOk.addEventListener('click', closeOpenEndedDialog);
     }
     if (deactivateCancel) {
         deactivateCancel.addEventListener('click', closeDeactivateDialog);

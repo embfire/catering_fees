@@ -21,8 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const activationDialog = document.getElementById('guest-activation-dialog');
     const activationOk = document.getElementById('guest-activation-ok');
     const activationBody = document.getElementById('guest-activation-body');
-    const openEndedDialog = document.getElementById('guest-open-ended-dialog');
-    const openEndedOk = document.getElementById('guest-open-ended-ok');
     const deactivateDialog = document.getElementById('guest-deactivate-dialog');
     const deactivateCancel = document.getElementById('guest-deactivate-cancel');
     const deactivateConfirm = document.getElementById('guest-deactivate-confirm');
@@ -164,16 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
         activationDialog.setAttribute('aria-hidden', 'true');
     };
 
-    const openOpenEndedDialog = () => {
-        showInlineError('Add an open-ended guest range (leave TO empty, ∞) to cover all guest counts.');
-    };
-
-    const closeOpenEndedDialog = () => {
-        if (!openEndedDialog) return;
-        openEndedDialog.classList.remove('is-open');
-        openEndedDialog.setAttribute('aria-hidden', 'true');
-    };
-
     const openDeactivateDialog = () => {
         if (!deactivateDialog) return;
         deactivateDialog.classList.add('is-open');
@@ -313,22 +301,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             if (!Number.isFinite(data.min) || data.min < 0) {
-                setRowError(row, '[data-error="min"]', 'Minimum guests must be 0 or greater.');
+                setRowError(row, '[data-error="min"]', 'Minimum party size must be 0 or greater.');
                 row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
             if (Number.isFinite(data.min) && !Number.isInteger(data.min)) {
-                setRowError(row, '[data-error="min"]', 'Minimum guests must be a whole number.');
+                setRowError(row, '[data-error="min"]', 'Minimum party size must be a whole number.');
                 row.querySelector('[data-field="min"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
             if (data.max !== null && (!Number.isFinite(data.max) || data.max < data.min)) {
-                setRowError(row, '[data-error="max"]', 'Maximum guests must be greater than or equal to minimum.');
+                setRowError(row, '[data-error="max"]', 'Maximum party size must be greater than or equal to minimum.');
                 row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
             if (data.max !== null && Number.isFinite(data.max) && !Number.isInteger(data.max)) {
-                setRowError(row, '[data-error="max"]', 'Maximum guests must be a whole number.');
+                setRowError(row, '[data-error="max"]', 'Maximum party size must be a whole number.');
                 row.querySelector('[data-field="max"]').closest('.input-field').classList.add('input-error');
                 valid = false;
             }
@@ -525,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInlineError();
             if (!savedSettings.guestCountActive) {
                 if (!tableBody.querySelectorAll('.range-row').length) {
-                    openActivationDialog('Add at least one guest range.');
+                    openActivationDialog('Add at least one party size range.');
                     return;
                 }
                 if (!validateRules().valid) {
@@ -545,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
         unsavedSave.addEventListener('click', () => {
             clearInlineError();
             if (!tableBody.querySelectorAll('.range-row').length) {
-                openActivationDialog('Add at least one guest range.');
+                openActivationDialog('Add at least one party size range.');
                 return;
             }
             if (!validateRules().valid) {
@@ -569,9 +557,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (activationOk) {
         activationOk.addEventListener('click', closeActivationDialog);
-    }
-    if (openEndedOk) {
-        openEndedOk.addEventListener('click', closeOpenEndedDialog);
     }
     if (deactivateCancel) {
         deactivateCancel.addEventListener('click', closeDeactivateDialog);

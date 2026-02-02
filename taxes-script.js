@@ -560,12 +560,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const guestCountValue = Number(previewGuestCount?.value);
             const guestCountRaw = String(previewGuestCount?.value || '').trim();
             if (!guestCountRaw) {
-                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a guest count.');
+                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a party size.');
                 previewGuestCount?.focus();
                 return;
             }
             if (!Number.isFinite(guestCountValue) || guestCountValue < 0) {
-                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a valid guest count.');
+                setFieldError(previewGuestCountError, previewGuestCountField, 'Enter a valid party size.');
                 previewGuestCount?.focus();
                 return;
             }

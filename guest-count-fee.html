@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest count fee</title>
+    <title>Party size fee</title>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
     <script src="fees-store.js" defer></script>
@@ -17,7 +17,7 @@
                 <button class="close-button" aria-label="Close">
                     <i class="ph ph-x icon-24" aria-hidden="true"></i>
                 </button>
-                <h1 class="header-title">Guest count fee</h1>
+                <h1 class="header-title">Party size fee</h1>
             </div>
             <div class="header-right">
                 <button class="btn-activate" id="guest-count-toggle">Activate</button>
@@ -35,14 +35,14 @@
         <main class="main-content">
             <!-- Page Header -->
             <section class="page-header">
-                <h1 class="page-title">Guest count fee</h1>
+                <h1 class="page-title">Party size fee</h1>
                 <p class="page-description">Automatically adjust fees based on the number of guests</p>
                 <div class="divider"></div>
             </section>
 
             <section class="table-section">
                 <div class="table-header">
-                    <h2 class="table-title">Guest count ranges</h2>
+                    <h2 class="table-title">Party size ranges</h2>
                     <button class="btn-secondary btn-with-icon" id="add-range">
                         <i class="ph ph-plus icon-16" aria-hidden="true"></i>
                         Add range
@@ -61,7 +61,7 @@
                         </thead>
                         <tbody id="guest-range-body"></tbody>
                     </table>
-                    <p class="table-empty" id="guest-count-empty" hidden>No guest count ranges added yet.</p>
+                    <p class="table-empty" id="guest-count-empty" hidden>No party size ranges added yet.</p>
                 </div>
                 <div class="inline-error" id="guest-count-inline-error" role="alert" hidden>
                     <svg class="inline-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -79,24 +79,11 @@
     <div class="modal-backdrop" id="guest-activation-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
-                <p class="dialog-title">Add guest ranges first</p>
-                <p class="dialog-body" id="guest-activation-body">Add at least one guest range before activating this fee.</p>
+                <p class="dialog-title">Add party size ranges first</p>
+                <p class="dialog-body" id="guest-activation-body">Add at least one party size range before activating this fee.</p>
             </div>
             <div class="dialog-actions">
                 <button class="btn-activate" type="button" id="guest-activation-ok">Got it</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Open-ended Range Dialog -->
-    <div class="modal-backdrop" id="guest-open-ended-dialog" aria-hidden="true">
-        <div class="dialog">
-            <div class="dialog-content">
-                <p class="dialog-title">Open-ended range required</p>
-                <p class="dialog-body">Add an open-ended range to cover all guest counts.</p>
-            </div>
-            <div class="dialog-actions">
-                <button class="btn-activate" type="button" id="guest-open-ended-ok">Got it</button>
             </div>
         </div>
     </div>
@@ -105,8 +92,8 @@
     <div class="modal-backdrop" id="guest-deactivate-dialog" aria-hidden="true">
         <div class="dialog">
             <div class="dialog-content">
-                <p class="dialog-title">Deactivate guest count fee?</p>
-                <p class="dialog-body">This will stop applying guest count fees to new orders.</p>
+                <p class="dialog-title">Deactivate party size fee?</p>
+                <p class="dialog-body">This will stop applying party size fees to new orders.</p>
             </div>
             <div class="dialog-actions">
                 <button class="btn-secondary" type="button" id="guest-deactivate-cancel">Cancel</button>

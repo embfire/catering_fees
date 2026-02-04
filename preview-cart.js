@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
             addFeeLine(
                 lines,
                 'Full-service',
-                'Comprehensive on-site service from setup to cleanup.',
+                'Complete professional on-site catering service.',
                 bundleRule,
                 true
             );

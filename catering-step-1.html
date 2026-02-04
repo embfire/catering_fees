@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catering order - Step 1</title>
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="catering-step-1.css">
+</head>
+<body class="step-one">
+    <main class="step-one-panel" role="dialog" aria-label="Tell us about your event">
+        <button class="modal-close" type="button" aria-label="Close">
+            <i class="ph ph-x" aria-hidden="true"></i>
+        </button>
+
+        <div class="step-one-content">
+            <header class="step-one-header">
+                <h1 class="step-one-title">Tell us about your event</h1>
+                <p class="step-one-subtitle">
+                    We use this information to plan your order accurately and recommend the right menu options
+                </p>
+            </header>
+
+            <section class="form-section">
+                <label class="form-label" for="party-size">Party size</label>
+                <input class="underline-input" id="party-size" name="partySize" type="number" value="200" min="1" step="1">
+            </section>
+
+            <section class="form-section">
+                <label class="form-label" for="event-type">Event type</label>
+                <div class="underline-select">
+                    <select id="event-type" name="eventType" class="underline-select-input">
+                        <option value="wedding" selected>Wedding</option>
+                        <option value="corporate">Corporate event</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="social">Social gathering</option>
+                    </select>
+                    <i class="ph ph-caret-down" aria-hidden="true"></i>
+                </div>
+            </section>
+
+            <section class="services-section">
+                <h2 class="services-title">Catering services</h2>
+                <p class="services-subtitle">Choose individual services, or select all for full-service</p>
+
+                <div class="services-list">
+                    <label class="service-option" for="service-all">
+                        <input class="service-checkbox" type="checkbox" id="service-all">
+                        <span class="checkbox-control" aria-hidden="true"></span>
+                        <span class="service-label">Select all</span>
+                    </label>
+
+                    <label class="service-option" for="service-cutlery">
+                        <input class="service-checkbox" type="checkbox" id="service-cutlery" checked>
+                        <span class="checkbox-control" aria-hidden="true"></span>
+                        <span class="service-label">
+                            <span class="service-name">Cutlery</span>
+                            <span class="service-meta"> · $0.30 per person</span>
+                        </span>
+                    </label>
+
+                    <label class="service-option" for="service-staffing">
+                        <input class="service-checkbox" type="checkbox" id="service-staffing">
+                        <span class="checkbox-control" aria-hidden="true"></span>
+                        <span class="service-label">
+                            <span class="service-name">On-site staff</span>
+                            <span class="service-meta"> · $1.50 per person</span>
+                        </span>
+                    </label>
+
+                    <label class="service-option" for="service-setup">
+                        <input class="service-checkbox" type="checkbox" id="service-setup">
+                        <span class="checkbox-control" aria-hidden="true"></span>
+                        <span class="service-label">
+                            <span class="service-name">On-site setup</span>
+                            <span class="service-meta"> · $20 flat</span>
+                        </span>
+                    </label>
+
+                    <label class="service-option" for="service-cleanup">
+                        <input class="service-checkbox" type="checkbox" id="service-cleanup">
+                        <span class="checkbox-control" aria-hidden="true"></span>
+                        <span class="service-label">
+                            <span class="service-name">Cleanup</span>
+                            <span class="service-meta"> · 4% of subtotal (calculated at checkout)</span>
+                        </span>
+                    </label>
+                </div>
+                <p class="staffing-helper" id="staffing-helper">Setup and cleanup require on-site staff.</p>
+            </section>
+        </div>
+
+        <div class="button-container">
+            <button class="primary-button" type="button" id="continue-button">Next</button>
+        </div>
+    </main>
+
+    <script src="catering-step-1.js"></script>
+</body>
+</html>

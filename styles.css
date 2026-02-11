@@ -13,6 +13,7 @@
     --grayscale-20: #cccccc;
     --grayscale-05: #f2f2f2;
     --grayscale-white: #ffffff;
+    --grayscale-transparent-3: rgba(44, 44, 49, 0.03);
     --grayscale-transparent-7: rgba(0, 0, 0, 0.07);
     
     /* Typography */
@@ -1239,6 +1240,19 @@ input[type="number"] {
 }
 
 /* Event type page */
+.event-type-page .fee-table tbody td.cell-bold {
+    font-weight: 600;
+}
+
+.event-type-page .fee-table tbody tr {
+    cursor: pointer;
+}
+
+.event-type-page .fee-table tbody tr:hover,
+.event-type-page .fee-table tbody tr:hover td {
+    background-color: var(--grayscale-transparent-3);
+}
+
 .event-type-header {
     display: flex;
     align-items: flex-start;

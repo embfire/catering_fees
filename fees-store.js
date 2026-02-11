@@ -31,7 +31,8 @@
             guestCountActive: false,
             guestCountCalcType: 'flat',
             orderAmountActive: false,
-            orderAmountCalcType: 'flat'
+            orderAmountCalcType: 'flat',
+            eventTypeActive: false
         }
     });
 

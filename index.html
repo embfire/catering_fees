@@ -207,33 +207,30 @@
                         <button class="btn-text" data-action="order-amount" id="order-amount-action">Configure</button>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- Event Type Fees Section -->
-        <section class="section">
-            <div class="section-header">
-                <h2 class="section-title">Event type fees</h2>
-                <button class="btn-primary">
-                    <i class="ph ph-plus btn-icon" aria-hidden="true"></i>
-                    Add event type fee
-                </button>
-            </div>
-
-            <!-- Event Type Fees Table -->
-            <div class="table-container">
-                <table class="fees-table">
-                    <thead>
-                        <tr>
-                            <th>EVENT TYPE</th>
-                            <th>CALCULATION</th>
-                            <th>FEE AMOUNT</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="event-type-table-body"></tbody>
-                </table>
-                <p class="table-empty" id="event-type-empty" hidden>No event type fees added yet.</p>
+                <!-- Event Type Fee Card -->
+                <div class="card">
+                    <div class="card-content">
+                        <div class="card-icon">
+                            <i class="ph ph-cake icon-24" aria-hidden="true"></i>
+                        </div>
+                        <div class="card-info">
+                            <h3 class="card-title">Event type fee</h3>
+                            <p class="card-description">Charge different fees based on event type</p>
+                        </div>
+                    </div>
+                    <div class="card-summary-row" hidden>
+                        <p class="card-summary" id="event-type-summary"></p>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="card-footer">
+                        <div class="status-tag status-inactive" id="event-type-status">
+                            <span class="status-dot" aria-hidden="true"></span>
+                            <span>INACTIVE</span>
+                        </div>
+                        <button class="btn-text" data-action="event-type" id="event-type-action">Manage</button>
+                    </div>
+                </div>
             </div>
         </section>
 

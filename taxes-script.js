@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (action === 'order-amount') {
                 window.location.href = 'order-amount-fee.html';
             }
+            if (action === 'event-type') {
+                window.location.href = 'event-type-fee.html';
+            }
         });
     });
 
@@ -145,11 +148,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const previewFullServiceSegment = document.getElementById('preview-full-service-segment');
     const previewFullServiceModeInput = document.getElementById('preview-full-service-mode');
     const componentKeys = ['cutlery', 'staffing', 'setup', 'cleanup'];
-
-    const tableBody = document.getElementById('event-type-table-body');
-    const emptyState = document.getElementById('event-type-empty');
-    const tableContainer = tableBody ? tableBody.closest('.table-container') : null;
-    const addFeeButton = document.querySelector('.section-header .btn-primary');
 
     const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`;
     const formatPercent = (value) => `${value}%`;
@@ -307,13 +305,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasFullServiceActive = fullServiceConfig.mode === 'a_la_carte'
             ? getConfiguredALaCarteComponents(fullServiceConfig).length > 0
             : !!fullServiceConfig.bundle?.active;
+        const hasEventTypeActive = !!settings.eventTypeActive;
         setStatusTag('guest-count-status', hasGuestActive);
         setStatusTag('full-service-status', hasFullServiceActive);
         setStatusTag('order-amount-status', hasOrderAmountActive);
+        setStatusTag('event-type-status', hasEventTypeActive);
         setActionLabel('guest-count-action', hasGuestActive);
         setActionLabel('full-service-action', hasFullServiceActive);
         setActionLabel('order-amount-action', hasOrderAmountActive);
-        updateCardSummaries(hasGuestActive, hasOrderAmountActive, hasFullServiceActive);
+        setActionLabel('event-type-action', hasEventTypeActive);
+        updateCardSummaries(hasGuestActive, hasOrderAmountActive, hasFullServiceActive, hasEventTypeActive);
     };
 
     const setCardSummary = (elementId, summary) => {
@@ -416,7 +417,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return parts.join(' • ');
     };
 
-    const updateCardSummaries = (guestActive, orderAmountActive, fullServiceActive) => {
+    const getEventTypeSummary = () => {
+        const rules = FeesStore.getEventTypeRules();
+        if (!rules.length) return '';
+        const parts = rules.map(rule => {
+            const valueText = rule.calcType === 'percent'
+                ? `${formatPercent(rule.percent || 0)} of subtotal`
+                : `${formatCurrencyShort(rule.amountCents || 0)} flat`;
+            return `${valueText} for ${rule.eventTypeName}`;
+        });
+        return parts.join(' • ');
+    };
+
+    const updateCardSummaries = (guestActive, orderAmountActive, fullServiceActive, eventTypeActive) => {
         const settings = FeesStore.getSettings();
         const fullServiceConfig = FeesStore.getFullServiceConfig();
         const resolvedGuestActive = typeof guestActive === 'boolean' ? guestActive : !!settings.guestCountActive;
@@ -426,52 +439,12 @@ document.addEventListener('DOMContentLoaded', function() {
             : (fullServiceConfig.mode === 'a_la_carte'
                 ? getConfiguredALaCarteComponents(fullServiceConfig).length > 0
                 : !!fullServiceConfig.bundle?.active);
+        const resolvedEventTypeActive = typeof eventTypeActive === 'boolean' ? eventTypeActive : !!settings.eventTypeActive;
 
         setCardSummary('guest-count-summary', resolvedGuestActive ? getGuestCountSummary() : '');
         setCardSummary('order-amount-summary', resolvedOrderAmountActive ? getOrderAmountSummary() : '');
         setCardSummary('full-service-summary', resolvedFullServiceActive ? getFullServiceSummary() : '');
-    };
-
-    const renderTable = () => {
-        const rules = FeesStore.getEventTypeRules();
-        tableBody.innerHTML = '';
-        const isEmpty = rules.length === 0;
-
-        if (emptyState) {
-            emptyState.hidden = !isEmpty;
-        }
-        if (tableContainer) {
-            tableContainer.classList.toggle('is-empty', isEmpty);
-        }
-
-        if (isEmpty) {
-            return;
-        }
-        rules.forEach(rule => {
-            const row = document.createElement('tr');
-            row.dataset.id = rule.id;
-            const calculation = rule.calcType === 'percent' ? 'Percentage' : 'Flat';
-            const amount = rule.calcType === 'percent'
-                ? formatPercent(rule.percent || 0)
-                : formatCurrency(rule.amountCents || 0);
-            const statusBadge = rule.active ? '' : '<span class="status-badge">Inactive</span>';
-
-            row.innerHTML = `
-                <td class="cell-bold">
-                    <div class="cell-status">${rule.eventTypeName} ${statusBadge}</div>
-                </td>
-                <td>${calculation}</td>
-                <td>${amount}</td>
-                <td class="cell-action">
-                    <div class="action-buttons">
-                        <button class="btn-delete" type="button" data-action="delete" aria-label="Delete">
-                            <i class="ph ph-trash icon-16" aria-hidden="true"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
+        setCardSummary('event-type-summary', resolvedEventTypeActive ? getEventTypeSummary() : '');
     };
 
     if (previewButton) {
@@ -612,35 +585,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    addFeeButton.addEventListener('click', () => {
-        window.location.href = 'event-type-fee.html';
-    });
-
-    tableBody.addEventListener('click', (event) => {
-        const row = event.target.closest('tr');
-        if (!row) return;
-        const ruleId = row.dataset.id;
-
-        const button = event.target.closest('button');
-        if (button) {
-            const action = button.dataset.action;
-            if (action === 'delete') {
-                const rule = FeesStore.getEventTypeRules().find(item => item.id === ruleId);
-                if (rule && confirm(`Are you sure you want to delete the fee for "${rule.eventTypeName}"?`)) {
-                    FeesStore.deleteEventTypeRule(ruleId);
-                    renderTable();
-                }
-            }
-            return;
-        }
-
-        const rule = FeesStore.getEventTypeRules().find(item => item.id === ruleId);
-        if (rule) {
-            const encodedId = encodeURIComponent(rule.id);
-            window.location.href = `event-type-fee.html?id=${encodedId}`;
-        }
-    });
-
-    renderTable();
     updateStatusTags();
 });

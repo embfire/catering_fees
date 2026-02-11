@@ -1238,6 +1238,18 @@ input[type="number"] {
     margin-top: 4px;
 }
 
+/* Event type page */
+.event-type-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0;
+}
+
+.event-type-page .modal-large {
+    width: 516px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .page-header,

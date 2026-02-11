@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event type fee</title>
+    <title>Event type fees</title>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="styles.css">
     <script src="fees-store.js" defer></script>
     <script src="event-type-script.js" defer></script>
 </head>
-<body>
+<body class="event-type-page">
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -17,77 +17,138 @@
                 <button class="close-button" aria-label="Close">
                     <i class="ph ph-x icon-24" aria-hidden="true"></i>
                 </button>
-                <h1 class="header-title">Event type fee</h1>
+                <h1 class="header-title">Event type fees</h1>
             </div>
             <div class="header-right">
-                <button class="btn-activate" id="event-type-save">Save</button>
+                <button class="btn-activate" id="event-type-toggle">Activate</button>
             </div>
         </header>
+        <div class="unsaved-bar" id="event-type-unsaved">
+            <span class="unsaved-title">Unsaved changes</span>
+            <div class="unsaved-actions">
+                <button class="btn-secondary" id="event-type-cancel" type="button">Cancel</button>
+                <button class="btn-activate" id="event-type-save" type="button">Save</button>
+            </div>
+        </div>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Page Header -->
-            <section class="page-header">
-                <h2 class="page-title">Event type fee</h2>
-                <p class="page-description">Charge different fees by event type</p>
-                <div class="divider"></div>
+            <section class="page-header event-type-header">
+                <div class="page-header-text">
+                    <h1 class="page-title">Event type fees</h1>
+                    <p class="page-description">Charge different fees by event type</p>
+                </div>
+                <button class="btn-secondary btn-with-icon" id="add-event-type-fee">
+                    <i class="ph ph-plus icon-16" aria-hidden="true"></i>
+                    Add event type fee
+                </button>
             </section>
 
-            <!-- Form Fields -->
-            <section class="form-section">
-                <div class="form-row">
-                    <div class="form-label">
-                        <label for="event-type-name">Event type</label>
-                    </div>
-                    <div class="form-input">
-                        <div class="input-wrapper">
-                            <div class="input-field select-field" id="event-type-select" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-                                <span class="select-text is-placeholder" id="event-type-display">Select</span>
-                                <div class="select-actions">
-                                    <button class="select-clear" type="button" id="event-type-clear" aria-label="Clear selection">
-                                        <i class="ph ph-x icon-16" aria-hidden="true"></i>
-                                    </button>
-                                    <span class="select-caret" aria-hidden="true">
-                                        <i class="ph ph-caret-down icon-16"></i>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="select-menu" id="event-type-menu" role="listbox" aria-hidden="true"></div>
-                            <input type="hidden" id="event-type-name" required>
-                            <p class="form-error" id="event-type-name-error" role="alert"></p>
-                        </div>
-                    </div>
+            <section class="table-section">
+                <div class="table-container">
+                    <table class="fee-table">
+                        <thead>
+                            <tr>
+                                <th>EVENT TYPE</th>
+                                <th>CALCULATION</th>
+                                <th>FEE AMOUNT</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="event-type-table-body"></tbody>
+                    </table>
+                    <p class="table-empty" id="event-type-empty" hidden>No event type fees added yet.</p>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-label">
-                        <label>Calculation type</label>
-                    </div>
-                    <div class="form-input">
-                        <div class="segmented-control" id="event-type-calc">
-                            <button class="segment-button segment-selected" data-value="flat">Flat</button>
-                            <button class="segment-button" data-value="percent">Percentage</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-label">
-                        <label for="event-type-amount">Fee amount</label>
-                    </div>
-                    <div class="form-input">
-                        <div class="input-wrapper">
-                            <div class="input-field">
-                                <span class="input-prefix" id="event-type-prefix">$</span>
-                                <input type="text" id="event-type-amount" class="text-input" value="">
-                                <span class="input-suffix is-hidden" id="event-type-suffix">%</span>
-                            </div>
-                            <p class="form-error" id="event-type-amount-error" role="alert"></p>
-                        </div>
-                    </div>
+                <div class="inline-error" id="event-type-inline-error" role="alert" hidden>
+                    <svg class="inline-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <circle cx="8" cy="8" r="8" fill="#FF3B30"/>
+                        <path d="M8 3.5C7.58579 3.5 7.25 3.83579 7.25 4.25V9.25C7.25 9.66422 7.58579 10 8 10C8.41421 10 8.74999 9.66421 8.74999 9.25V4.25C8.74999 3.83579 8.41421 3.5 8 3.5Z" fill="white"/>
+                        <path d="M8 12.5C8.41421 12.5 8.74999 12.1642 8.74999 11.75C8.74999 11.3358 8.41421 11 8 11C7.58579 11 7.25 11.3358 7.25 11.75C7.25 12.1642 7.58579 12.5 8 12.5Z" fill="white"/>
+                    </svg>
+                    <span class="inline-error-text"></span>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Add/Edit Event Type Fee Modal -->
+    <div class="modal-backdrop" id="event-type-fee-modal" aria-hidden="true">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2 class="modal-title" id="event-type-modal-title">Add event type fee</h2>
+                <button class="modal-close" type="button" id="event-type-modal-close" aria-label="Close">
+                    <i class="ph ph-x icon-16" aria-hidden="true"></i>
+                </button>
+            </div>
+            <form class="modal-body modal-body-compact" id="event-type-modal-form">
+                <div class="modal-row modal-field-stack">
+                    <label class="modal-label">Event type</label>
+                    <div class="input-wrapper">
+                        <div class="input-field select-field" id="event-type-select" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+                            <span class="select-text is-placeholder" id="event-type-display">Select</span>
+                            <div class="select-actions">
+                                <button class="select-clear" type="button" id="event-type-clear" aria-label="Clear selection">
+                                    <i class="ph ph-x icon-16" aria-hidden="true"></i>
+                                </button>
+                                <span class="select-caret" aria-hidden="true">
+                                    <i class="ph ph-caret-down icon-16"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="select-menu" id="event-type-menu" role="listbox" aria-hidden="true"></div>
+                        <input type="hidden" id="event-type-name" name="eventType">
+                        <p class="modal-error" id="event-type-name-error" role="alert"></p>
+                    </div>
+                </div>
+                <div class="modal-row modal-field-stack">
+                    <label class="modal-label">Calculation type</label>
+                    <div class="segmented-control" id="event-type-calc">
+                        <button class="segment-button segment-selected" type="button" data-value="flat">Flat</button>
+                        <button class="segment-button" type="button" data-value="percent">Percentage</button>
+                    </div>
+                </div>
+                <div class="modal-row modal-field-stack">
+                    <label class="modal-label" for="event-type-amount">Fee amount</label>
+                    <div class="input-wrapper">
+                        <div class="input-field">
+                            <span class="input-prefix" id="event-type-prefix">$</span>
+                            <input type="text" id="event-type-amount" class="text-input" name="amount" value="">
+                            <span class="input-suffix is-hidden" id="event-type-suffix">%</span>
+                        </div>
+                        <p class="modal-error" id="event-type-amount-error" role="alert"></p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" type="button" id="event-type-modal-cancel">Cancel</button>
+                    <button class="btn-activate" type="submit" id="event-type-modal-submit">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Deactivation Confirmation Dialog -->
+    <div class="modal-backdrop" id="event-type-deactivate-dialog" aria-hidden="true">
+        <div class="dialog">
+            <div class="dialog-content">
+                <p class="dialog-title">Deactivate event type fees?</p>
+                <p class="dialog-body">This will stop applying event type fees to new orders.</p>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn-secondary" type="button" id="event-type-deactivate-cancel">Cancel</button>
+                <button class="btn-destructive" type="button" id="event-type-deactivate-confirm">Deactivate</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="snackbar" id="fee-snackbar" role="status" aria-live="polite">
+        <span class="snackbar-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 22 22" focusable="false" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="11" cy="11" rx="8.00003" ry="8" fill="#44AB0B"/>
+                <path d="M13.6721 7.58953C13.8988 7.24284 14.3636 7.14556 14.7103 7.37224C15.0254 7.57831 15.1345 7.98118 14.9814 8.31319L14.9276 8.4104L10.6776 14.9104C10.4289 15.2907 9.91 15.3585 9.57265 15.0788L9.49235 15.0017L7.24234 12.5017C6.96525 12.1938 6.9902 11.7196 7.29809 11.4425C7.57798 11.1906 7.99534 11.1883 8.2771 11.4213L8.35729 11.4982L9.95482 13.274L13.6721 7.58953Z" fill="white"/>
+            </svg>
+        </span>
+        <span class="snackbar-message">Snackbar message</span>
     </div>
 </body>
 </html>

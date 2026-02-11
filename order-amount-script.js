@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
         unsavedSave.addEventListener('click', () => {
             clearInlineError();
             if (!tableBody.querySelectorAll('.range-row').length) {
-                openActivationDialog('Add at least one subtotal range.');
+                openDeactivateDialog();
                 return;
             }
             if (!validateRules().valid) {

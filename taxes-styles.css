@@ -406,6 +406,15 @@ body {
     margin-bottom: 0;
 }
 
+.section-empty {
+    color: var(--grayscale-60);
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: -0.154px;
+    text-align: center;
+    padding: 16px 0;
+}
+
 /* Cards Grid */
 .cards-grid {
     display: grid;
@@ -413,6 +422,10 @@ body {
     align-items: start;
     gap: 24px;
     margin-bottom: 24px;
+}
+
+.cards-grid:empty {
+    display: none;
 }
 
 /* Card */

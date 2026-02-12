@@ -131,13 +131,19 @@
             </div>
         </div>
 
-        <!-- Guest Count and Full-Service Fee Section -->
-        <section class="section">
-            <h2 class="section-title">Volume and service fees</h2>
+        <!-- Active Fees Section -->
+        <section class="section" id="active-section">
+            <h2 class="section-title">Active</h2>
+            <div class="cards-grid" id="active-cards-grid"></div>
+            <p class="section-empty" id="active-empty" hidden>There are no active catering fees</p>
+        </section>
 
-            <div class="cards-grid">
+        <!-- Inactive Fees Section -->
+        <section class="section" id="inactive-section">
+            <h2 class="section-title">Inactive</h2>
+            <div class="cards-grid" id="inactive-cards-grid">
                 <!-- Party Size Fee Card -->
-                <div class="card">
+                <div class="card" id="card-guest-count" data-fee="guest-count">
                     <div class="card-content">
                         <div class="card-icon">
                             <i class="ph ph-users icon-24" aria-hidden="true"></i>
@@ -156,12 +162,12 @@
                             <span class="status-dot" aria-hidden="true"></span>
                             <span>INACTIVE</span>
                         </div>
-                        <button class="btn-text" data-action="guest-count" id="guest-count-action">Manage</button>
+                        <button class="btn-text" data-action="guest-count" id="guest-count-action">Configure</button>
                     </div>
                 </div>
 
                 <!-- Full-Service Fee Card -->
-                <div class="card">
+                <div class="card" id="card-full-service" data-fee="full-service">
                     <div class="card-content">
                         <div class="card-icon">
                             <i class="ph ph-martini icon-24" aria-hidden="true"></i>
@@ -185,7 +191,7 @@
                 </div>
 
                 <!-- Subtotal-based Fee Card -->
-                <div class="card">
+                <div class="card" id="card-order-amount" data-fee="order-amount">
                     <div class="card-content">
                         <div class="card-icon">
                             <i class="ph ph-currency-dollar icon-24" aria-hidden="true"></i>
@@ -209,7 +215,7 @@
                 </div>
 
                 <!-- Event Type Fee Card -->
-                <div class="card">
+                <div class="card" id="card-event-type" data-fee="event-type">
                     <div class="card-content">
                         <div class="card-icon">
                             <i class="ph ph-cake icon-24" aria-hidden="true"></i>
@@ -228,10 +234,11 @@
                             <span class="status-dot" aria-hidden="true"></span>
                             <span>INACTIVE</span>
                         </div>
-                        <button class="btn-text" data-action="event-type" id="event-type-action">Manage</button>
+                        <button class="btn-text" data-action="event-type" id="event-type-action">Configure</button>
                     </div>
                 </div>
             </div>
+            <p class="section-empty" id="inactive-empty" hidden>There are no inactive catering fees</p>
         </section>
 
     </main>

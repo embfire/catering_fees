@@ -296,6 +296,29 @@ document.addEventListener('DOMContentLoaded', function() {
         button.textContent = isActive ? 'Manage' : 'Configure';
     };
 
+    const activeGrid = document.getElementById('active-cards-grid');
+    const inactiveGrid = document.getElementById('inactive-cards-grid');
+    const activeEmpty = document.getElementById('active-empty');
+    const inactiveEmpty = document.getElementById('inactive-empty');
+
+    const distributeCards = (statuses) => {
+        if (!activeGrid || !inactiveGrid) return;
+        Object.entries(statuses).forEach(([feeKey, isActive]) => {
+            const card = document.querySelector(`.card[data-fee="${feeKey}"]`);
+            if (!card) return;
+            const targetGrid = isActive ? activeGrid : inactiveGrid;
+            if (card.parentElement !== targetGrid) {
+                targetGrid.appendChild(card);
+            }
+        });
+        if (activeEmpty) {
+            activeEmpty.hidden = activeGrid.children.length > 0;
+        }
+        if (inactiveEmpty) {
+            inactiveEmpty.hidden = inactiveGrid.children.length > 0;
+        }
+    };
+
     const updateStatusTags = () => {
         const guestRules = FeesStore.getGuestCountRules();
         const settings = FeesStore.getSettings();
@@ -315,6 +338,12 @@ document.addEventListener('DOMContentLoaded', function() {
         setActionLabel('order-amount-action', hasOrderAmountActive);
         setActionLabel('event-type-action', hasEventTypeActive);
         updateCardSummaries(hasGuestActive, hasOrderAmountActive, hasFullServiceActive, hasEventTypeActive);
+        distributeCards({
+            'guest-count': hasGuestActive,
+            'full-service': hasFullServiceActive,
+            'order-amount': hasOrderAmountActive,
+            'event-type': hasEventTypeActive
+        });
     };
 
     const setCardSummary = (elementId, summary) => {
